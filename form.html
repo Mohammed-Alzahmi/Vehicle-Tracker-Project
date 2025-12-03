@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل استخدام المركبة</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- رسائل الفلاش (النجاح أو الفشل) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flashes">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <div class="logo-header">
+            <!-- تأكدي من وجود logo_gov_sharjah.png و logo_sharjah_police.png في مجلد static/ -->
+            <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" alt="شعار حكومة الشارقة" class="logo left-logo">
+            <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" alt="شعار شرطة الشارقة" class="logo right-logo">
+        </div> 
+
+        <h1>تسجيل استخدام المركبة</h1>
+        <p>الرجاء تعبئة بياناتك للموافقة على استخدام السيارة. سيتم تسجيل الوقت الحالي تلقائياً.</p>
+
+        <!-- بداية النموذج (Form) -->
+        <form action="{{ url_for('submit') }}" method="POST">
+
+            <!-- حقل الاسم (الـ Username) -->
+            <label for="username">الاسم الكامل:</label>
+            <input type="text" id="username" name="username" required>
+
+            <!-- حقل الرقم العسكري (Military ID) -->
+            <label for="military_id">الرقم العسكري:</label>
+            <input type="text" id="military_id" name="military_id" required>
+
+            <!-- حقل اختيار نوع السيارة (الجديد - Dropdown) -->
+            <label for="car_type">اختيار نوع المركبة:</label>
+            <select id="car_type" name="car_type" required>
+                <!-- هذا الخيار بيستقبل اسم السيارة لو ياي من QR Code -->
+                <option value="{{ car_name }}" selected>{{ car_name }}</option> 
+                <option value="Hilux_01_AbuDhabi">هايلوكس 01 (أبوظبي)</option>
+                <option value="LandCruiser_10_Admin">لاندكروزر 10 (إدارة)</option>
+                <option value="Patrol_05_Dubai">باترول 05 (دبي)</option>
+                <option value="Ranger_02_Sharjah">رانجر 02 (الشارقة)</option>
+                <option value="Nissan_Sedan_03_Ajman">نيسان سيدان 03 (عجمان)</option>
+                <option value="Ford_F150_08_Gharbia">فورد F150 08 (الغربية)</option>
+            </select>
+
+            <!-- زر الإرسال -->
+            <button type="submit">تسجيل الدخول / الإرسال</button>
+
+            <!-- لينك لصفحة الأدمن -->
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="{{ url_for('admin') }}" style="color: #666; font-size: 0.9rem; text-decoration: none;">عرض سجل البيانات (للإدارة)</a>
+            </div>
+
+        </form>
+    </div>
+</body>
+</html>
