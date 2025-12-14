@@ -1,0 +1,256 @@
+/* --- الألوان المعتمدة للثيم البيج والبني الذهبي --- */
+:root {
+    --primary-dark: #4E342E; /* بني غامق (للنصوص، العناوين، حدود الجدول) */
+    --primary-beige: #F8F4E3; /* لون بيج رسمي للخلفية */
+    --accent-gold: #B8860B; /* لون ذهبي غامق (للأزرار الرئيسية) */
+}
+
+/* --- إعدادات الخطوط والصفحة الأساسية (ملء الشاشة) --- */
+body {
+    background-color: var(--primary-beige); 
+    font-family: 'Arial', sans-serif; 
+    margin: 0;
+    padding: 0;
+    display: flex;
+    /* عشان العنصر (الـ container) يكون في نص الشاشة (Horizontally and Vertically) */
+    justify-content: center; 
+    align-items: center;
+    min-height: 100vh; /* !!! عشان الخلفية تملأ الشاشة بالكامل !!! */
+    color: #333; 
+    direction: rtl; 
+    text-align: right;
+    width: 100%; /* عشان نضمن إنها تأخذ كل عرض الشاشة */
+    box-sizing: border-box;
+}
+
+/* --- تنسيق منطقة الشعارات --- */
+.logo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #EEE;
+}
+
+.logo {
+    max-height: 80px; 
+    width: auto;
+}
+
+/* --- شكل الـ Container (الحاوية الرئيسية) --- */
+.container, .admin-container {
+    background-color: #ffffff;
+    padding: 50px; 
+    border-radius: 8px; 
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); 
+    width: 90%; /* نخليه ياخذ 90% من مساحة الشاشة */
+    max-width: 650px; /* لكن ما يزيد عن 650 بكسل */
+    border-top: 10px solid var(--primary-dark); 
+    transition: box-shadow 0.3s;
+    /* مارجن أوتو للـ centering لو ما اشتغل الـ flex في الـ body */
+    margin: 20px; 
+}
+.admin-container {
+    max-width: 95%; 
+    margin: 30px auto; 
+}
+
+/* --- العناوين والنصوص --- */
+h1, h2 {
+    color: var(--primary-dark);
+    text-align: center;
+    margin-bottom: 5px;
+    font-size: 2.2rem;
+    font-weight: 800;
+}
+
+p {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.05rem;
+}
+
+/* --- تنسيق حقول الإدخال والـ Select --- */
+label {
+    display: block;
+    margin-bottom: 8px;
+    margin-top: 15px;
+    font-weight: bold;
+    color: var(--primary-dark);
+    font-size: 1rem;
+}
+
+input[type="text"],
+select {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 2px solid #ccc;
+    border-radius: 4px; 
+    box-sizing: border-box; 
+    font-size: 1.1rem;
+    color: #333;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="text"]:focus,
+select:focus {
+    border-color: var(--accent-gold); 
+    box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.2);
+    outline: none;
+}
+
+/* --- زر الإرسال --- */
+button[type="submit"], .back-button {
+    background-color: var(--accent-gold); 
+    color: white;
+    padding: 18px 25px; 
+    border: none;
+    border-radius: 4px; 
+    font-size: 1.25rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
+    margin-top: 30px; 
+    letter-spacing: 1px;
+    box-shadow: 0 5px 18px rgba(184, 134, 11, 0.5); 
+    text-decoration: none; 
+    display: block; 
+    width: 100%;
+    text-align: center;
+}
+
+button[type="submit"]:hover, .back-button:hover {
+    background-color: #DAA520; 
+    box-shadow: 0 8px 25px rgba(184, 134, 11, 0.7); 
+}
+
+/* --- تنسيق الجدول في admin.html --- */
+.data-table {
+    width: 100%;
+    border-collapse: collapse; 
+    margin-top: 20px;
+    font-size: 0.95rem;
+}
+
+.data-table thead tr {
+    background-color: var(--primary-dark); 
+    color: #ffffff;
+    text-align: right;
+}
+
+.data-table th, 
+.data-table td {
+    padding: 12px 15px;
+    border: 1px solid #dee2e6;
+    text-align: right;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background-color: #f1f1f1; 
+}
+
+.data-table tbody tr:hover {
+    background-color: #e9ecef; 
+    cursor: pointer;
+}
+
+/* --- رسائل الفلاش --- */
+.flashes {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.flashes li {
+    padding: 15px 25px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 1.05rem;
+    border: 1px solid transparent;
+}
+
+.success {
+    background-color: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+}
+
+/* --- تعديلات للـ Responsive Design (الشاشات الصغيرة - مثل التلفون) --- */
+@media (max-width: 650px) {
+    .container {
+        padding: 30px 20px; /* نقلل المسافة الداخلية */
+        margin: 10px; /* نقلل المارجن على الجوانب */
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .logo {
+        max-height: 50px; /* نصغر الشعارات أكثر */
+    }
+
+    input[type="text"],
+    select {
+        padding: 12px;
+        font-size: 1rem;
+    }
+
+    button[type="submit"] {
+        padding: 15px;
+        font-size: 1.1rem;
+    }
+
+    /* عشان جدول الأدمن يشتغل زين على التلفون */
+    .data-table thead {
+        display: none; /* نخفي رأس الجدول */
+    }
+
+    .data-table, .data-table tbody, .data-table tr, .data-table td {
+        display: block; /* نحول عرض العناصر إلى كتل (Block) */
+        width: 100%;
+    }
+
+    .data-table tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .data-table td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border: none;
+    }
+
+    /* نضيف محتوى العناوين قبل كل خلية */
+    .data-table td:before {
+        content: attr(data-label); 
+        position: absolute;
+        right: 15px;
+        width: 45%;
+        padding-left: 10px;
+        font-weight: bold;
+        color: var(--primary-dark);
+        text-align: right;
+    }
+
+    /* نعطي labels للبيانات في admin.html */
+    .data-table td:nth-of-type(1):before { content: "#"; }
+    .data-table td:nth-of-type(2):before { content: "الاسم الكامل:"; }
+    .data-table td:nth-of-type(3):before { content: "الرقم العسكري:"; }
+    .data-table td:nth-of-type(4):before { content: "نوع المركبة:"; }
+    .data-table td:nth-of-type(5):before { content: "الوقت والتاريخ:"; }
+}
