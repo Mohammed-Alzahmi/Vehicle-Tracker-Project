@@ -11,6 +11,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__)
 # !! غيري هذا المفتاح السري عقب !!
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# 🚀 1. إضافة رمز الأمان للأدمن
+ADMIN_SECRET_CODE = os.environ.get('ADMIN_CODE', 'A999A') 
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'cars.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -21,8 +25,8 @@ class CarLog(db.Model):
     username = db.Column(db.String(100), nullable=False) # اسم الشخص
     military_id = db.Column(db.String(50), nullable=False) # الرقم العسكري
     car_type = db.Column(db.String(50), nullable=False) # نوع السيارة
-    # الوقت يتسجل كتوقيت عالمي موحد (UTC) عشان الداتابيس تكون صح
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.now(datetime.timezone.utc)) 
+    # 🚀 2. تعديل التوقيت: نخليه فاضي عشان نحسب الوقت لحظة الإرسال
+    timestamp = db.Column(db.DateTime) 
 
     def __repr__(self):
         return f"Log('{self.username}', '{self.car_type}', '{self.timestamp}')"
@@ -58,6 +62,7 @@ with app.app_context():
 # --- الصفحة الرئيسية (اللي بيفتحها الموظف) ---
 @app.route('/')
 def index():
+    # هذا يزيل لينك الأدمن من الأسفل إذا كان الموقع محمي
     car_name = request.args.get('car', 'سيارة غير محددة') 
     return render_template('form.html', car_name=car_name)
 
@@ -69,7 +74,12 @@ def submit():
         military_id = request.form['military_id']
         car_type = request.form['car_type']
 
-        new_log = CarLog(username=username, military_id=military_id, car_type=car_type)
+        # 🚀 3. نحسب الوقت الفعلي لتوقيت دبي لحظة الضغط على زر الإرسال
+        uae_tz = pytz.timezone('Asia/Dubai')
+        current_uae_time = datetime.datetime.now(uae_tz) 
+
+        # 🚀 4. نمرر الوقت الجديد لـ new_log
+        new_log = CarLog(username=username, military_id=military_id, car_type=car_type, timestamp=current_uae_time)
 
         try:
             db.session.add(new_log)
@@ -84,7 +94,15 @@ def submit():
 # --- صفحة الأدمن (Dashboard) - هاي صفحتج أنتي ---
 @app.route('/admin')
 def admin():
-    # نجيب كل السجلات ونرتبهم من الأحدث للأقدم
+    # 🚀 5. حماية الصفحة: نجيب الرمز السري من رابط الصفحة
+    code = request.args.get('code') 
+
+    # 🚀 6. إذا الرمز غلط، نرجع المستخدم لصفحة الإدخال ونمنعه
+    if code != ADMIN_SECRET_CODE:
+        flash('🚫 وصول غير مصرح به! هذا القسم محمي.', 'danger')
+        return redirect(url_for('index')) 
+        
+    # 7. إذا الرمز صح، نعرض البيانات (هذا الكود كان موجود قبل)
     all_logs = CarLog.query.order_by(CarLog.timestamp.desc()).all()
     # في admin.html، لازم نستخدم الدالة format_datetime_uae
     return render_template('admin.html', logs=all_logs)
