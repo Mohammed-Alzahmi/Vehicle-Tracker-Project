@@ -1,6 +1,7 @@
 import os
 import datetime
 import io
+import re
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file, make_response
 from flask_sqlalchemy import SQLAlchemy
 import pytz 
@@ -72,6 +73,11 @@ def delete_logs():
         flash(f'تم حذف {len(log_ids)} سجل بنجاح!', 'success')
     return redirect(url_for('admin', code=code))
 
+# دالة تنظيف البيانات من أي حرف غير إنجليزي
+def clean_for_pdf(text):
+    # يسمح فقط بالأرقام، الحروف الإنجليزية، والرموز الأساسية
+    return re.sub(r'[^\x00-\x7f]', r' ', str(text))
+
 @app.route('/download_pdf')
 def download_pdf():
     code = request.args.get('code')
@@ -79,41 +85,44 @@ def download_pdf():
         return "Unauthorized", 403
     try:
         logs = CarLog.query.order_by(CarLog.timestamp.desc()).all()
-        # نستخدم التحميل كـ UTF-8 عشان ننهي سالفة الـ latin-1 للأبد
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Helvetica", 'B', 16)
+        pdf.set_font("Arial", 'B', 16)
         pdf.cell(200, 10, txt="Vehicle Log Report", ln=1, align='C')
         pdf.ln(10)
         
-        pdf.set_font("Helvetica", 'B', 10)
+        pdf.set_font("Arial", 'B', 10)
         pdf.cell(15, 10, "#", 1)
-        pdf.cell(55, 10, "Name", 1)
+        pdf.cell(55, 10, "Name (EN Only)", 1)
         pdf.cell(40, 10, "Military ID", 1)
         pdf.cell(40, 10, "Car Type", 1)
         pdf.cell(40, 10, "Time", 1)
         pdf.ln()
 
-        pdf.set_font("Helvetica", size=10)
+        pdf.set_font("Arial", size=10)
         for log in logs:
-            # تنظيف إجباري: نحول أي حرف عربي لـ "?" عشان السيرفر ما ينهار
-            name = str(log.username).encode('ascii', 'replace').decode('ascii')
-            car = str(log.car_type).encode('ascii', 'replace').decode('ascii')
+            # تنظيف البيانات قبل كتابتها
+            safe_name = clean_for_pdf(log.username)
+            safe_car = clean_for_pdf(log.car_type)
+            safe_id = clean_for_pdf(log.military_id)
             
             pdf.cell(15, 10, str(log.id), 1)
-            pdf.cell(55, 10, name[:20], 1)
-            pdf.cell(40, 10, str(log.military_id), 1)
-            pdf.cell(40, 10, car, 1)
+            pdf.cell(55, 10, safe_name[:25], 1)
+            pdf.cell(40, 10, safe_id, 1)
+            pdf.cell(40, 10, safe_car, 1)
             pdf.cell(40, 10, log.timestamp.strftime('%Y-%m-%d %H:%M'), 1)
             pdf.ln()
 
-        # استخراج الملف كـ bytes بدون المرور بـ latin-1
-        response = make_response(pdf.output())
+        response = make_response(pdf.output(dest='S'))
+        # التأكد إن الـ output صار bytes
+        if isinstance(response.data, str):
+            response.data = response.data.encode('latin-1', 'replace')
+            
         response.headers.set('Content-Type', 'application/pdf')
-        response.headers.set('Content-Disposition', 'attachment', filename='logs.pdf')
+        response.headers.set('Content-Disposition', 'attachment', filename='vehicle_logs.pdf')
         return response
     except Exception as e:
-        return f"Final Fix Error: {str(e)}", 500
+        return f"PDF Final Shield Error: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
