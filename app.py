@@ -95,28 +95,31 @@ def download_pdf():
 
         pdf.set_font("Arial", size=10)
         for log in logs:
-            # تنظيف إجباري: أي حرف مب إنجليزي يتحول لـ ? عشان الـ PDF ما يعلق
-            clean_name = str(log.username).encode('latin-1', 'replace').decode('latin-1')
-            clean_car = str(log.car_type).encode('latin-1', 'replace').decode('latin-1')
+            # الحل القاتل للأيرور: نحول الكلام لـ ASCII ونستبدل أي حرف غريب بـ ?
+            safe_name = str(log.username).encode('ascii', 'replace').decode('ascii')
+            safe_car = str(log.car_type).encode('ascii', 'replace').decode('ascii')
             
             pdf.cell(15, 10, str(log.id), 1)
-            pdf.cell(55, 10, clean_name[:20], 1)
+            pdf.cell(55, 10, safe_name[:20], 1)
             pdf.cell(40, 10, str(log.military_id), 1)
-            pdf.cell(40, 10, clean_car, 1)
+            pdf.cell(40, 10, safe_car, 1)
             pdf.cell(40, 10, log.timestamp.strftime('%Y-%m-%d %H:%M'), 1)
             pdf.ln()
 
-        # استخراج الملف كـ Bytes وتحديد الترميز بدقة
-        pdf_output = pdf.output(dest='S')
-        if isinstance(pdf_output, str):
-            pdf_output = pdf_output.encode('latin-1')
+        # استخراج كـ bytes وإرساله مباشرة
+        pdf_content = pdf.output(dest='S')
+        # التأكد من تحويل الـ output لـ bytes إذا كان string
+        if isinstance(pdf_content, str):
+            pdf_content = pdf_content.encode('latin-1', 'replace')
 
         return send_file(
-            io.BytesIO(pdf_output),
+            io.BytesIO(pdf_content),
             mimetype='application/pdf',
             as_attachment=True,
             download_name='vehicle_logs.pdf'
         )
     except Exception as e:
-        # لو استوى خطأ، بيطلع لج في الصفحة عشان نعرف وينه بالضبط
-        return f"Final PDF Error: {str(e)}", 500
+        return f"System PDF Error: {str(e)}", 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
