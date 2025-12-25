@@ -1,7 +1,3 @@
 Flask
 Flask-SQLAlchemy
 pytz
-fpdf2
-qrcode
-Pillow
-gunicorn
