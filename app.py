@@ -1,7 +1,7 @@
 import os
 import datetime
 import io
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file, make_response
 from flask_sqlalchemy import SQLAlchemy
 import pytz 
 from fpdf import FPDF
@@ -15,6 +15,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'ca
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# قاعدة البيانات
 class CarLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False)
@@ -22,6 +23,7 @@ class CarLog(db.Model):
     car_type = db.Column(db.String(50), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
+# فلتر الوقت لتوقيت الإمارات
 @app.template_filter('format_datetime_uae')
 def format_datetime_uae(value):
     if value is None: return ""
@@ -32,11 +34,13 @@ def format_datetime_uae(value):
 with app.app_context():
     db.create_all()
 
+# الصفحة الرئيسية (الفورم)
 @app.route('/')
 def index():
     car_name = request.args.get('car', 'سيارة غير محددة') 
     return render_template('index.html', car_name=car_name)
 
+# إرسال البيانات
 @app.route('/submit', methods=['POST'])
 def submit():
     if request.method == 'POST':
@@ -51,6 +55,7 @@ def submit():
             flash('خطأ في التسجيل!', 'danger')
             return redirect(url_for('index', car=car_type))
 
+# صفحة الأدمن
 @app.route('/admin')
 def admin():
     code = request.args.get('code') 
@@ -60,7 +65,7 @@ def admin():
     all_logs = CarLog.query.order_by(CarLog.timestamp.desc()).all()
     return render_template('admin.html', logs=all_logs)
 
-# --- ميزة حذف البيانات المحددة ---
+# حذف السجلات
 @app.route('/delete_logs', methods=['POST'])
 def delete_logs():
     code = request.args.get('code')
@@ -74,44 +79,50 @@ def delete_logs():
         flash(f'تم حذف {len(log_ids)} سجل بنجاح!', 'success')
     return redirect(url_for('admin', code=code))
 
-# --- ميزة تصدير البيانات إلى PDF ---
+# تحميل الـ PDF
 @app.route('/download_pdf')
 def download_pdf():
     code = request.args.get('code')
     if code != ADMIN_SECRET_CODE:
         return "Unauthorized", 403
     
-    logs = CarLog.query.order_by(CarLog.timestamp.desc()).all()
-    
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(200, 10, txt="Vehicle Log Report", ln=1, align='C')
-    pdf.ln(10)
-    
-    pdf.set_font("Arial", 'B', 10)
-    pdf.cell(10, 10, "#", 1)
-    pdf.cell(50, 10, "Name", 1)
-    pdf.cell(40, 10, "Military ID", 1)
-    pdf.cell(40, 10, "Car Type", 1)
-    pdf.cell(50, 10, "Time", 1)
-    pdf.ln()
-
-    pdf.set_font("Arial", size=10)
-    for log in logs:
-        pdf.cell(10, 10, str(log.id), 1)
-        pdf.cell(50, 10, str(log.username), 1)
-        pdf.cell(40, 10, str(log.military_id), 1)
-        pdf.cell(40, 10, str(log.car_type), 1)
-        pdf.cell(50, 10, log.timestamp.strftime('%Y-%m-%d %H:%M'), 1)
+    try:
+        logs = CarLog.query.order_by(CarLog.timestamp.desc()).all()
+        
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", 'B', 16)
+        pdf.cell(200, 10, txt="Vehicle Log Report", ln=1, align='C')
+        pdf.ln(10)
+        
+        pdf.set_font("Arial", 'B', 10)
+        pdf.cell(15, 10, "#", 1)
+        pdf.cell(55, 10, "Name", 1)
+        pdf.cell(40, 10, "Military ID", 1)
+        pdf.cell(40, 10, "Car Type", 1)
+        pdf.cell(40, 10, "Time", 1)
         pdf.ln()
 
-    output = io.BytesIO()
-    pdf_content = pdf.output(dest='S').encode('latin-1')
-    output.write(pdf_content)
-    output.seek(0)
-    
-    return send_file(output, as_attachment=True, download_name="vehicle_logs.pdf", mimetype='application/pdf')
+        pdf.set_font("Arial", size=10)
+        for log in logs:
+            # تنظيف البيانات لتجنب مشاكل الترميز
+            safe_name = str(log.username).encode('ascii', 'ignore').decode('ascii')
+            safe_car = str(log.car_type).encode('ascii', 'ignore').decode('ascii')
+            
+            pdf.cell(15, 10, str(log.id), 1)
+            pdf.cell(55, 10, safe_name[:20], 1)
+            pdf.cell(40, 10, str(log.military_id), 1)
+            pdf.cell(40, 10, safe_car, 1)
+            pdf.cell(40, 10, log.timestamp.strftime('%Y-%m-%d %H:%M'), 1)
+            pdf.ln()
+
+        response = make_response(pdf.output(dest='S').encode('latin-1'))
+        response.headers.set('Content-Type', 'application/pdf')
+        response.headers.set('Content-Disposition', 'attachment', filename='vehicle_logs.pdf')
+        return response
+        
+    except Exception as e:
+        return f"Error generating PDF: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

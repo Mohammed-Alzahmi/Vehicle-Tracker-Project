@@ -6,50 +6,16 @@
     <title>لوحة التحكم - مراقبة السيارات</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
-        /* ستايلات إضافية لتنظيم الأزرار والجدول */
-        .admin-actions { 
-            margin-bottom: 20px; 
-            display: flex; 
-            gap: 15px; 
-            flex-wrap: wrap;
-        }
-        .btn-pdf { 
-            background-color: #2e7d32; 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            text-decoration: none; 
-            border-radius: 5px; 
-            display: inline-block;
-            font-weight: bold;
-        }
-        .btn-toggle-edit { 
-            background-color: #f39c12; 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-weight: bold;
-        }
-        .btn-delete { 
-            background-color: #d32f2f; 
-            color: white; 
-            border: none; 
-            padding: 12px 25px; 
-            cursor: pointer; 
-            border-radius: 5px; 
-            margin-top: 15px;
-            font-weight: bold;
-            width: 100%;
-            display: none; /* مخفي في البداية */
-        }
-        /* إخفاء عمود التحديد افتراضياً */
+        .admin-actions { margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; }
+        .btn-pdf { background-color: #2e7d32; color: white; border: none; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .btn-toggle-edit { background-color: #f39c12; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-delete { background-color: #d32f2f; color: white; border: none; padding: 12px 25px; cursor: pointer; border-radius: 5px; margin-top: 15px; font-weight: bold; width: 100%; }
+        
+        /* إخفاء عمود التحديد وزر الحذف في البداية */
         .select-col { display: none; text-align: center; width: 50px; }
+        #deleteBtnContainer { display: none; }
         
-        /* تفعيل ظهور الأعمدة عند الضغط على الزر */
         .edit-mode .select-col { display: table-cell; }
-        
         .alert { padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #e8f5e9; color: #2e7d32; text-align: center; }
     </style>
 </head>
@@ -68,9 +34,9 @@
             <button type="button" class="btn-toggle-edit" onclick="toggleEditMode()">✏️ تفعيل التعديل والحذف</button>
         </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% with messages = get_flashed_messages() %}
           {% if messages %}
-            {% for category, message in messages %}
+            {% for message in messages %}
               <div class="alert">{{ message }}</div>
             {% endfor %}
           {% endif %}
@@ -101,41 +67,37 @@
                             <td>{{ log.car_type }}</td>
                             <td>{{ log.timestamp | format_datetime_uae }}</td>
                         </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="6" style="text-align: center;">لا توجد بيانات مسجلة حالياً.</td>
-                        </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             
-            <button type="submit" id="deleteBtn" class="btn-delete" onclick="return confirm('هل أنت متأكد من حذف السجلات المختارة؟')">❌ حذف السجلات المحددة</button>
+            <div id="deleteBtnContainer">
+                <button type="submit" class="btn-delete" onclick="return confirm('هل أنت متأكد من حذف السجلات؟')">❌ حذف السجلات المحددة</button>
+            </div>
         </form>
 
-        <a href="{{ url_for('index') }}" class="back-button" style="display: block; text-align: center; margin-top: 20px; text-decoration: none; color: #666;">العودة لصفحة الإدخال</a>
+        <a href="{{ url_for('index') }}" class="back-button" style="display: block; text-align: center; margin-top: 20px; text-decoration: none;">العودة لصفحة الإدخال</a>
     </div>
 
     <script>
     function toggleEditMode() {
         var table = document.getElementById("adminTable");
-        var deleteBtn = document.getElementById("deleteBtn");
+        var deleteBtnDiv = document.getElementById("deleteBtnContainer");
         var btnToggle = document.querySelector(".btn-toggle-edit");
         
-        // تبديل الكلاس لتغيير الشكل
         table.classList.toggle("edit-mode");
         
         if (table.classList.contains("edit-mode")) {
-            deleteBtn.style.display = "block";
+            deleteBtnDiv.style.display = "block";
             btnToggle.innerText = "🔒 إلغاء التعديل";
             btnToggle.style.backgroundColor = "#666";
         } else {
-            deleteBtn.style.display = "none";
+            deleteBtnDiv.style.display = "none";
             btnToggle.innerText = "✏️ تفعيل التعديل والحذف";
             btnToggle.style.backgroundColor = "#f39c12";
         }
     }
     </script>
-
 </body>
 </html>
