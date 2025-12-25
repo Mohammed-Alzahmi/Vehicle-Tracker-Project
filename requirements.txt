@@ -4,3 +4,4 @@ qrcode
 Pillow
 gunicorn
 pytz
+fpdf
