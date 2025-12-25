@@ -95,30 +95,28 @@ def download_pdf():
 
         pdf.set_font("Arial", size=10)
         for log in logs:
-            # تنظيف إجباري: أي حرف غير إنجليزي بيتحول لـ فراغ
-            u_name = "".join([c if ord(c) < 128 else " " for c in str(log.username)])
-            u_car = "".join([c if ord(c) < 128 else " " for c in str(log.car_type)])
+            # تنظيف إجباري: أي حرف مب إنجليزي يتحول لـ ? عشان الـ PDF ما يعلق
+            clean_name = str(log.username).encode('latin-1', 'replace').decode('latin-1')
+            clean_car = str(log.car_type).encode('latin-1', 'replace').decode('latin-1')
             
             pdf.cell(15, 10, str(log.id), 1)
-            pdf.cell(55, 10, u_name[:20], 1)
+            pdf.cell(55, 10, clean_name[:20], 1)
             pdf.cell(40, 10, str(log.military_id), 1)
-            pdf.cell(40, 10, u_car, 1)
+            pdf.cell(40, 10, clean_car, 1)
             pdf.cell(40, 10, log.timestamp.strftime('%Y-%m-%d %H:%M'), 1)
             pdf.ln()
 
-        # استخراج كـ bytes وتجنب أي encoding في الـ output
-        content = pdf.output(dest='S')
-        if isinstance(content, str):
-            content = content.encode('latin-1', 'replace')
+        # استخراج الملف كـ Bytes وتحديد الترميز بدقة
+        pdf_output = pdf.output(dest='S')
+        if isinstance(pdf_output, str):
+            pdf_output = pdf_output.encode('latin-1')
 
         return send_file(
-            io.BytesIO(content),
+            io.BytesIO(pdf_output),
             mimetype='application/pdf',
             as_attachment=True,
             download_name='vehicle_logs.pdf'
         )
     except Exception as e:
-        return f"PDF Error: {str(e)}", 500
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+        # لو استوى خطأ، بيطلع لج في الصفحة عشان نعرف وينه بالضبط
+        return f"Final PDF Error: {str(e)}", 500
