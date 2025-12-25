@@ -15,7 +15,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'ca
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# قاعدة البيانات
 class CarLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False)
@@ -23,7 +22,6 @@ class CarLog(db.Model):
     car_type = db.Column(db.String(50), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
-# فلتر الوقت لتوقيت الإمارات
 @app.template_filter('format_datetime_uae')
 def format_datetime_uae(value):
     if value is None: return ""
@@ -34,13 +32,11 @@ def format_datetime_uae(value):
 with app.app_context():
     db.create_all()
 
-# الصفحة الرئيسية
 @app.route('/')
 def index():
     car_name = request.args.get('car', 'سيارة غير محددة') 
     return render_template('index.html', car_name=car_name)
 
-# إرسال البيانات
 @app.route('/submit', methods=['POST'])
 def submit():
     if request.method == 'POST':
@@ -55,7 +51,6 @@ def submit():
             flash('خطأ في التسجيل!', 'danger')
             return redirect(url_for('index', car=car_type))
 
-# صفحة الأدمن
 @app.route('/admin')
 def admin():
     code = request.args.get('code') 
@@ -65,13 +60,11 @@ def admin():
     all_logs = CarLog.query.order_by(CarLog.timestamp.desc()).all()
     return render_template('admin.html', logs=all_logs)
 
-# حذف السجلات
 @app.route('/delete_logs', methods=['POST'])
 def delete_logs():
     code = request.args.get('code')
     if code != ADMIN_SECRET_CODE:
         return "Unauthorized", 403
-    
     log_ids = request.form.getlist('log_ids')
     if log_ids:
         CarLog.query.filter(CarLog.id.in_(log_ids)).delete(synchronize_session=False)
@@ -79,16 +72,13 @@ def delete_logs():
         flash(f'تم حذف {len(log_ids)} سجل بنجاح!', 'success')
     return redirect(url_for('admin', code=code))
 
-# تحميل الـ PDF مع حل مشكلة الترميز
 @app.route('/download_pdf')
 def download_pdf():
     code = request.args.get('code')
     if code != ADMIN_SECRET_CODE:
         return "Unauthorized", 403
-    
     try:
         logs = CarLog.query.order_by(CarLog.timestamp.desc()).all()
-        
         pdf = FPDF()
         pdf.add_page()
         pdf.set_font("Arial", 'B', 16)
@@ -105,9 +95,10 @@ def download_pdf():
 
         pdf.set_font("Arial", size=10)
         for log in logs:
-            # تجاهل أي حروف غير مدعومة عشان ما يعلق الـ PDF
-            safe_name = str(log.username).encode('ascii', 'ignore').decode('ascii')
-            safe_car = str(log.car_type).encode('ascii', 'ignore').decode('ascii')
+            # هذي الأسطر هي اللي بتحل مشكلة الـ Error
+            # بنحول أي حروف مب إنجليزية لعلامة استفهام بس عشان ما يعلق السيرفر
+            safe_name = str(log.username).encode('ascii', 'replace').decode('ascii')
+            safe_car = str(log.car_type).encode('ascii', 'replace').decode('ascii')
             
             pdf.cell(15, 10, str(log.id), 1)
             pdf.cell(55, 10, safe_name[:20], 1)
@@ -116,16 +107,19 @@ def download_pdf():
             pdf.cell(40, 10, log.timestamp.strftime('%Y-%m-%d %H:%M'), 1)
             pdf.ln()
 
-        pdf_output = pdf.output(dest='S')
-        response = make_response(pdf_output.encode('latin-1', 'replace'))
-        response.headers.set('Content-Type', 'application/pdf')
-        response.headers.set('Content-Disposition', 'attachment', filename='vehicle_logs.pdf')
-        return response
-        
+        # استخراج البيانات بصيغة bytes مباشرة لتجنب مشاكل الـ String
+        pdf_bytes = pdf.output(dest='S')
+        if isinstance(pdf_bytes, str):
+            pdf_bytes = pdf_bytes.encode('latin-1', 'replace')
+
+        return send_file(
+            io.BytesIO(pdf_bytes),
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='vehicle_logs.pdf'
+        )
     except Exception as e:
         return f"Error: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
-    
