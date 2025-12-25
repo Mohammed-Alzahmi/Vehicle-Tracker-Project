@@ -254,3 +254,24 @@ button[type="submit"]:hover, .back-button:hover {
     .data-table td:nth-of-type(4):before { content: "نوع المركبة:"; }
     .data-table td:nth-of-type(5):before { content: "الوقت والتاريخ:"; }
 }
+
+/* إخفاء عمود التحديد بشكل افتراضي */
+.select-col {
+    display: none;
+}
+
+/* لما نضغط زر "تفعيل التعديل" يظهر العمود */
+.edit-mode .select-col {
+    display: table-cell;
+}
+
+/* ستايل لزر تفعيل التعديل */
+.btn-toggle-edit {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
