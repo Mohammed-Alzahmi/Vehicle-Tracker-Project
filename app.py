@@ -95,31 +95,30 @@ def download_pdf():
 
         pdf.set_font("Arial", size=10)
         for log in logs:
-            # هذي الأسطر هي اللي بتحل مشكلة الـ Error
-            # بنحول أي حروف مب إنجليزية لعلامة استفهام بس عشان ما يعلق السيرفر
-            safe_name = str(log.username).encode('ascii', 'replace').decode('ascii')
-            safe_car = str(log.car_type).encode('ascii', 'replace').decode('ascii')
+            # تنظيف إجباري: أي حرف غير إنجليزي بيتحول لـ فراغ
+            u_name = "".join([c if ord(c) < 128 else " " for c in str(log.username)])
+            u_car = "".join([c if ord(c) < 128 else " " for c in str(log.car_type)])
             
             pdf.cell(15, 10, str(log.id), 1)
-            pdf.cell(55, 10, safe_name[:20], 1)
+            pdf.cell(55, 10, u_name[:20], 1)
             pdf.cell(40, 10, str(log.military_id), 1)
-            pdf.cell(40, 10, safe_car, 1)
+            pdf.cell(40, 10, u_car, 1)
             pdf.cell(40, 10, log.timestamp.strftime('%Y-%m-%d %H:%M'), 1)
             pdf.ln()
 
-        # استخراج البيانات بصيغة bytes مباشرة لتجنب مشاكل الـ String
-        pdf_bytes = pdf.output(dest='S')
-        if isinstance(pdf_bytes, str):
-            pdf_bytes = pdf_bytes.encode('latin-1', 'replace')
+        # استخراج كـ bytes وتجنب أي encoding في الـ output
+        content = pdf.output(dest='S')
+        if isinstance(content, str):
+            content = content.encode('latin-1', 'replace')
 
         return send_file(
-            io.BytesIO(pdf_bytes),
+            io.BytesIO(content),
             mimetype='application/pdf',
             as_attachment=True,
             download_name='vehicle_logs.pdf'
         )
     except Exception as e:
-        return f"Error: {str(e)}", 500
+        return f"PDF Error: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
