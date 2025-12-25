@@ -34,7 +34,7 @@ def format_datetime_uae(value):
 with app.app_context():
     db.create_all()
 
-# الصفحة الرئيسية (الفورم)
+# الصفحة الرئيسية
 @app.route('/')
 def index():
     car_name = request.args.get('car', 'سيارة غير محددة') 
@@ -79,7 +79,7 @@ def delete_logs():
         flash(f'تم حذف {len(log_ids)} سجل بنجاح!', 'success')
     return redirect(url_for('admin', code=code))
 
-# تحميل الـ PDF
+# تحميل الـ PDF مع حل مشكلة الترميز
 @app.route('/download_pdf')
 def download_pdf():
     code = request.args.get('code')
@@ -105,7 +105,7 @@ def download_pdf():
 
         pdf.set_font("Arial", size=10)
         for log in logs:
-            # تنظيف البيانات لتجنب مشاكل الترميز
+            # تجاهل أي حروف غير مدعومة عشان ما يعلق الـ PDF
             safe_name = str(log.username).encode('ascii', 'ignore').decode('ascii')
             safe_car = str(log.car_type).encode('ascii', 'ignore').decode('ascii')
             
@@ -116,13 +116,14 @@ def download_pdf():
             pdf.cell(40, 10, log.timestamp.strftime('%Y-%m-%d %H:%M'), 1)
             pdf.ln()
 
-        response = make_response(pdf.output(dest='S').encode('latin-1'))
+        pdf_output = pdf.output(dest='S')
+        response = make_response(pdf_output.encode('latin-1', 'replace'))
         response.headers.set('Content-Type', 'application/pdf')
         response.headers.set('Content-Disposition', 'attachment', filename='vehicle_logs.pdf')
         return response
         
     except Exception as e:
-        return f"Error generating PDF: {str(e)}", 500
+        return f"Error: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
