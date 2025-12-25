@@ -4,9 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 import pytz 
 
-# إعدادات المسارات
 basedir = os.path.abspath(os.path.dirname(__file__))
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'uae-secret-key-123')
 ADMIN_SECRET_CODE = os.environ.get('ADMIN_CODE', 'A999A') 
@@ -15,7 +13,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'ca
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# جدول قاعدة البيانات
 class CarLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False)
@@ -23,7 +20,6 @@ class CarLog(db.Model):
     car_type = db.Column(db.String(50), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
-# فلتر تعديل الوقت للإماراتي
 @app.template_filter('format_datetime_uae')
 def format_datetime_uae(value):
     if value is None: return ""
@@ -37,15 +33,12 @@ with app.app_context():
 @app.route('/')
 def index():
     car_name = request.args.get('car', 'سيارة غير محددة') 
-    # هني تأكدي إن الملف في مجلد templates اسمه index.html
     return render_template('index.html', car_name=car_name)
 
 @app.route('/submit', methods=['POST'])
 def submit():
     if request.method == 'POST':
-        username = request.form['username']
-        military_id = request.form['military_id']
-        car_type = request.form['car_type']
+        username, military_id, car_type = request.form['username'], request.form['military_id'], request.form['car_type']
         new_log = CarLog(username=username, military_id=military_id, car_type=car_type)
         try:
             db.session.add(new_log)
