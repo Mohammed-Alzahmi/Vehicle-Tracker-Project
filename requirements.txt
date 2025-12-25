@@ -1,7 +1,7 @@
 Flask
 Flask-SQLAlchemy
 pytz
-fpdf
+fpdf2
 qrcode
 Pillow
 gunicorn

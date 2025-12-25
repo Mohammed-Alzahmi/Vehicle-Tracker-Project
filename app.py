@@ -79,13 +79,14 @@ def download_pdf():
         return "Unauthorized", 403
     try:
         logs = CarLog.query.order_by(CarLog.timestamp.desc()).all()
+        # نستخدم التحميل كـ UTF-8 عشان ننهي سالفة الـ latin-1 للأبد
         pdf = FPDF()
         pdf.add_page()
-        pdf.set_font("Arial", 'B', 16)
+        pdf.set_font("Helvetica", 'B', 16)
         pdf.cell(200, 10, txt="Vehicle Log Report", ln=1, align='C')
         pdf.ln(10)
         
-        pdf.set_font("Arial", 'B', 10)
+        pdf.set_font("Helvetica", 'B', 10)
         pdf.cell(15, 10, "#", 1)
         pdf.cell(55, 10, "Name", 1)
         pdf.cell(40, 10, "Military ID", 1)
@@ -93,33 +94,26 @@ def download_pdf():
         pdf.cell(40, 10, "Time", 1)
         pdf.ln()
 
-        pdf.set_font("Arial", size=10)
+        pdf.set_font("Helvetica", size=10)
         for log in logs:
-            # الحل القاتل للأيرور: نحول الكلام لـ ASCII ونستبدل أي حرف غريب بـ ?
-            safe_name = str(log.username).encode('ascii', 'replace').decode('ascii')
-            safe_car = str(log.car_type).encode('ascii', 'replace').decode('ascii')
+            # تنظيف إجباري: نحول أي حرف عربي لـ "?" عشان السيرفر ما ينهار
+            name = str(log.username).encode('ascii', 'replace').decode('ascii')
+            car = str(log.car_type).encode('ascii', 'replace').decode('ascii')
             
             pdf.cell(15, 10, str(log.id), 1)
-            pdf.cell(55, 10, safe_name[:20], 1)
+            pdf.cell(55, 10, name[:20], 1)
             pdf.cell(40, 10, str(log.military_id), 1)
-            pdf.cell(40, 10, safe_car, 1)
+            pdf.cell(40, 10, car, 1)
             pdf.cell(40, 10, log.timestamp.strftime('%Y-%m-%d %H:%M'), 1)
             pdf.ln()
 
-        # استخراج كـ bytes وإرساله مباشرة
-        pdf_content = pdf.output(dest='S')
-        # التأكد من تحويل الـ output لـ bytes إذا كان string
-        if isinstance(pdf_content, str):
-            pdf_content = pdf_content.encode('latin-1', 'replace')
-
-        return send_file(
-            io.BytesIO(pdf_content),
-            mimetype='application/pdf',
-            as_attachment=True,
-            download_name='vehicle_logs.pdf'
-        )
+        # استخراج الملف كـ bytes بدون المرور بـ latin-1
+        response = make_response(pdf.output())
+        response.headers.set('Content-Type', 'application/pdf')
+        response.headers.set('Content-Disposition', 'attachment', filename='logs.pdf')
+        return response
     except Exception as e:
-        return f"System PDF Error: {str(e)}", 500
+        return f"Final Fix Error: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
