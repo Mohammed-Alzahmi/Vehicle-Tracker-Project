@@ -13,6 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'ca
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# قاعدة بيانات السجلات
 class CarLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False)
@@ -20,6 +21,7 @@ class CarLog(db.Model):
     car_type = db.Column(db.String(50), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
+# فلتر الوقت لتوقيت الإمارات
 @app.template_filter('format_datetime_uae')
 def format_datetime_uae(value):
     if value is None: return ""
@@ -30,11 +32,13 @@ def format_datetime_uae(value):
 with app.app_context():
     db.create_all()
 
+# الصفحة الرئيسية
 @app.route('/')
 def index():
     car_name = request.args.get('car', 'سيارة غير محددة') 
     return render_template('index.html', car_name=car_name)
 
+# استقبال البيانات من الفورم
 @app.route('/submit', methods=['POST'])
 def submit():
     if request.method == 'POST':
@@ -51,6 +55,7 @@ def submit():
             flash('خطأ في التسجيل!', 'danger')
             return redirect(url_for('index', car=car_type))
 
+# صفحة الأدمن (بدون زر الـ PDF حالياً)
 @app.route('/admin')
 def admin():
     code = request.args.get('code') 
@@ -60,6 +65,7 @@ def admin():
     all_logs = CarLog.query.order_by(CarLog.timestamp.desc()).all()
     return render_template('admin.html', logs=all_logs)
 
+# حذف السجلات المختارة
 @app.route('/delete_logs', methods=['POST'])
 def delete_logs():
     code = request.args.get('code')
