@@ -13,7 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'ca
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# جدول السجلات
+# قاعدة بيانات السجلات (معدلة لتشمل المنطقة)
 class CarLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False)
@@ -22,7 +22,7 @@ class CarLog(db.Model):
     region = db.Column(db.String(50), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
-# جدول المناطق الجديد
+# جدول المناطق
 class Region(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
@@ -36,11 +36,6 @@ def format_datetime_uae(value):
 
 with app.app_context():
     db.create_all()
-    # إضافة مناطق افتراضية إذا كان الجدول فاضي
-    if not Region.query.first():
-        default_regions = [Region(name="خورفكان"), Region(name="الذيد"), Region(name="كلباء")]
-        db.session.bulk_save_objects(default_regions)
-        db.session.commit()
 
 @app.route('/')
 def home():
@@ -49,15 +44,11 @@ def home():
 
 @app.route('/add_region', methods=['POST'])
 def add_region():
-    new_name = request.form.get('region_name')
-    if new_name:
-        try:
-            new_reg = Region(name=new_name)
-            db.session.add(new_reg)
-            db.session.commit()
-            flash('تمت إضافة المنطقة بنجاح', 'success')
-        except:
-            flash('المنطقة موجودة مسبقاً', 'danger')
+    name = request.form.get('region_name')
+    if name:
+        new_reg = Region(name=name)
+        db.session.add(new_reg)
+        db.session.commit()
     return redirect(url_for('home'))
 
 @app.route('/delete_region/<int:id>')
@@ -66,13 +57,18 @@ def delete_region(id):
     if reg:
         db.session.delete(reg)
         db.session.commit()
-        flash('تم حذف المنطقة', 'success')
     return redirect(url_for('home'))
+
+# صفحة الباركود الخاصة بالمنطقة
+@app.route('/region_qr/<string:region_name>')
+def region_qr(region_name):
+    qr_link = url_for('index', region=region_name, _external=True)
+    return render_template('qr_view.html', region=region_name, qr_link=qr_link)
 
 @app.route('/register')
 def index():
     car_name = request.args.get('car', 'سيارة غير محددة')
-    region = request.args.get('region', 'غير محدد')
+    region = request.args.get('region', 'الشارقة') # يسحب المنطقة من اللينك
     return render_template('index.html', car_name=car_name, region=region)
 
 @app.route('/submit', methods=['POST'])
@@ -80,12 +76,12 @@ def submit():
     username = request.form['username']
     military_id = request.form['military_id']
     car_type = request.form['car_type']
-    region = request.form['region']
+    region = request.form['region'] # يسجل المنطقة اللي يات من الباركود
     new_log = CarLog(username=username, military_id=military_id, car_type=car_type, region=region)
     db.session.add(new_log)
     db.session.commit()
     flash('تم تسجيل البيانات بنجاح!', 'success')
-    return redirect(url_for('home'))
+    return redirect(url_for('index', car=car_type, region=region))
 
 @app.route('/admin')
 def admin():
@@ -96,7 +92,7 @@ def admin():
         logs = CarLog.query.filter_by(region=region_filter).order_by(CarLog.timestamp.desc()).all()
     else:
         logs = CarLog.query.order_by(CarLog.timestamp.desc()).all()
-    return render_template('admin.html', logs=logs, current_region=region_filter)
+    return render_template('admin.html', logs=logs)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
