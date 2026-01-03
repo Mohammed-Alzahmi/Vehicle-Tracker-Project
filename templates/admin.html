@@ -3,78 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>سجل دخول وخروج المركبات</title>
+    <title>سجل استخدام المركبات - لوحة التحكم</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #fdfdfd; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: #fdfdfd; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
         
-        /* شريط الأزرار العلوية */
-        .top-bar { display: flex; justify-content: flex-end; gap: 15px; padding: 20px; }
-        .btn-orange { background-color: #f39c12; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; }
-        .btn-green-pdf { background-color: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; text-decoration: none; }
+        /* الهيدر مع الشعارات نفس الصورة بالضبط */
+        .header-section { display: flex; justify-content: space-between; align-items: center; padding: 20px 40px; background-color: white; border-bottom: 1px solid #eee; }
+        .logo-img { height: 80px; width: auto; object-fit: contain; }
+        .header-title { color: #4b3621; font-weight: bold; font-size: 24px; margin: 0; flex-grow: 1; text-align: center; }
 
-        /* رسالة النجاح */
-        .msg-success { background-color: #dff0d8; color: #3c763d; padding: 15px; margin: 0 20px 20px 20px; border-radius: 5px; text-align: center; border: 1px solid #d6e9c6; font-weight: bold; }
+        /* الأزرار العلوية */
+        .top-actions-bar { display: flex; justify-content: flex-end; gap: 10px; padding: 15px 40px; }
+        .btn-green-pdf { background-color: #2e7d32; color: white; border: none; padding: 8px 18px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 14px; }
+        .msg-success-inline { color: #2e7d32; font-weight: bold; font-size: 14px; margin-right: auto; }
 
-        /* تصميم الجدول البني */
-        .table-box { margin: 0 20px; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
+        /* الجدول البني الرسمي */
+        .main-content { padding: 0 40px; }
+        .table-container { border: 1px solid #ddd; border-radius: 4px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .table { margin-bottom: 0; }
-        .table thead { background-color: #4b3621; color: white; }
-        .table th { text-align: center; padding: 15px; font-size: 14px; border: none; }
-        .table td { text-align: center; padding: 12px; font-size: 14px; border-bottom: 1px solid #eee; vertical-align: middle; }
+        .table thead { background-color: #3d2b1f; color: white; }
+        .table th { text-align: center; padding: 12px; font-size: 13px; border: none; }
+        .table td { text-align: center; padding: 12px; font-size: 13px; border-bottom: 1px solid #eee; vertical-align: middle; color: #333; }
 
-        /* الأزرار العريضة تحت */
-        .bottom-actions { padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .btn-gold-wide { background-color: #b8860b; color: white; border: none; padding: 18px; border-radius: 8px; font-weight: bold; font-size: 18px; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-brown-wide { background-color: #8d6e63; color: white; border: none; padding: 18px; border-radius: 8px; font-weight: bold; font-size: 18px; width: 100%; text-decoration: none; text-align: center; display: block; }
+        /* الأزرار الكبيرة تحت */
+        .footer-actions { padding: 30px 40px; display: flex; flex-direction: column; gap: 10px; }
+        .btn-gold-action { background-color: #b8860b; color: white; border: none; padding: 16px; border-radius: 8px; font-weight: bold; font-size: 16px; width: 100%; transition: 0.3s; }
+        .btn-gold-action:hover { background-color: #966d09; }
+        .btn-brown-action { background-color: #8d6e63; color: white; border: none; padding: 16px; border-radius: 8px; font-weight: bold; font-size: 16px; width: 100%; text-decoration: none; text-align: center; display: block; }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <button class="btn-orange">🪄 تفعيل التعديل والحذف</button>
+    <header class="header-section">
+        <img src="{{ url_for('static', filename='logo_left.png') }}" alt="Logo Left" class="logo-img">
+        <h1 class="header-title">سجل استخدام المركبات - لوحة تحكم</h1>
+        <img src="{{ url_for('static', filename='logo_right.png') }}" alt="Logo Right" class="logo-img">
+    </header>
+
+    <div class="top-actions-bar">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <span class="msg-success-inline">تم حذف 1 سجل بنجاح! ✅</span>
+          {% endif %}
+        {% endwith %}
         <div class="btn-green-pdf">📄 تحميل السجل PDF</div>
     </div>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="msg-success">تم حذف 1 سجل بنجاح! ✅</div>
-      {% endif %}
-    {% endwith %}
+    <main class="main-content">
+        <form action="{{ url_for('delete_logs', code=request.args.get('code')) }}" method="POST">
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>تحديد</th>
+                            <th>#</th>
+                            <th>الاسم الكامل</th>
+                            <th>الرقم العسكري</th>
+                            <th>نوع المركبة</th>
+                            <th>الوقت والتاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td><input type="checkbox" name="log_ids" value="{{ log.id }}" class="form-check-input"></td>
+                            <td>{{ loop.index }}</td>
+                            <td style="font-weight: bold;">{{ log.username }}</td>
+                            <td>{{ log.military_id }}</td>
+                            <td>{{ log.car_type }}</td>
+                            <td dir="ltr">{{ log.timestamp | format_datetime_uae }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
 
-    <form action="{{ url_for('delete_logs', code=request.args.get('code')) }}" method="POST">
-        <div class="table-box">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>الاسم الكامل</th>
-                        <th>الرقم العسكري</th>
-                        <th>نوع المركبة</th>
-                        <th>الوقت والتاريخ</th>
-                        <th>تحديد</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in logs %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td style="font-weight: bold;">{{ log.username }}</td>
-                        <td>{{ log.military_id }}</td>
-                        <td>{{ log.car_type }}</td>
-                        <td dir="ltr">{{ log.timestamp | format_datetime_uae }}</td>
-                        <td><input type="checkbox" name="log_ids" value="{{ log.id }}" class="form-check-input"></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="bottom-actions">
-            <button type="submit" class="btn-gold-wide">حذف السجلات المحددة ❌</button>
-            <a href="{{ url_for('index') }}" class="btn-brown-wide">العودة لصفحة الإدخال</a>
-        </div>
-    </form>
+            <div class="footer-actions">
+                <button type="submit" class="btn-gold-action">حذف السجلات المحددة ❌</button>
+                <a href="{{ url_for('index') }}" class="btn-brown-action">العودة لصفحة الإدخال</a>
+            </div>
+        </form>
+    </main>
 
 </body>
 </html>
