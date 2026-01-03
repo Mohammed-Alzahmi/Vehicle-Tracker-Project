@@ -7,93 +7,87 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #fdfdfd; font-family: 'Segoe UI', sans-serif; }
-        .gov-header { background: white; padding: 20px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; }
-        .logo-img { height: 80px; }
-        .hero { height: 75vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .main-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 500px; text-align: center; border: 1px solid #eee; }
+        body { background-color: #fdfdfd; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
         
-        .btn-main { width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 18px; margin-bottom: 15px; border: none; transition: 0.3s; display: block; text-decoration: none; }
-        .btn-logs { background-color: #4b3621; color: white; cursor: pointer; }
-        .btn-admin { background-color: #b8860b; color: white; }
-        
-        /* تصميم قائمة المناطق */
-        .region-list { display: none; background: #fff; border-radius: 15px; padding: 10px; margin-top: 15px; border: 1px solid #ddd; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
-        .region-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f5f5f5; transition: 0.2s; }
-        .region-item:hover { background-color: #fcfcfc; }
-        .region-name { text-decoration: none; color: #4b3621; font-weight: 600; flex-grow: 1; text-align: right; }
-        
-        /* منيو الثلاث نقاط */
-        .dots-menu { cursor: pointer; color: #999; padding: 5px 10px; position: relative; }
-        .dots-menu:hover { color: #4b3621; }
-        
-        /* تخصيص الـ Dropdown مال بوتستراب */
-        .dropdown-menu { text-align: right; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: none; }
-        .dropdown-item { font-size: 14px; padding: 10px 20px; color: #4b3621; }
-        .dropdown-item i { margin-left: 10px; font-size: 12px; }
-        .text-danger { color: #dc3545 !important; }
+        /* الهيدر العلوي */
+        .top-nav { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 1000; }
+        .menu-icon { font-size: 28px; color: #4b3621; cursor: pointer; transition: 0.3s; }
+        .btn-back { background: #8d6e63; color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: bold; text-decoration: none; font-size: 14px; }
+        .btn-back:hover { background: #6d4c41; color: white; }
 
-        .btn-add-circle { background: #2e7d32; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; cursor: pointer; font-size: 18px; }
+        /* الشعارات في النص */
+        .hero-section { height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .logo-container { display: flex; gap: 40px; margin-bottom: 20px; }
+        .logo-large { height: 120px; width: auto; }
+        .welcome-title { color: #4b3621; font-weight: bold; margin-top: 20px; letter-spacing: 1px; }
+
+        /* القائمة الجانبية Sidebar */
+        .sidebar { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background-color: #3d2b1f; overflow-x: hidden; transition: 0.5s; padding-top: 60px; box-shadow: -5px 0 15px rgba(0,0,0,0.2); }
+        .sidebar a, .sidebar-header { padding: 15px 30px; text-decoration: none; font-size: 18px; color: #dcb057; display: block; transition: 0.3s; border-bottom: 1px solid #4e342e; }
+        .sidebar a:hover { background-color: #4e342e; color: white; }
+        .sidebar .closebtn { position: absolute; top: 10px; left: 25px; font-size: 36px; color: white; cursor: pointer; }
+        
+        /* تنسيق قائمة المناطق داخل السايد بار */
+        .region-sub-menu { background: #2d1f16; display: none; }
+        .region-sub-menu a { font-size: 15px; padding-right: 50px; border-bottom: 1px solid #3d2b1f; color: #fff; }
+        
+        .add-region-btn { color: #2ecc71 !important; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <header class="gov-header">
-        <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" class="logo-img">
-        <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" class="logo-img">
-    </header>
-
-    <div class="hero">
-        <div class="main-card">
-            <h2 class="mb-4" style="color: #4b3621;">نظام الإدارة الرقمي</h2>
-            
-            <div class="btn-main btn-logs" onclick="toggleRegions()">📁 السجلات والمناطق</div>
-            
-            <div id="regionMenu" class="region-list">
-                <div class="d-flex justify-content-between align-items-center mb-3 px-2">
-                    <span style="font-weight: bold; color: #8d6e63;">قائمة المناطق</span>
-                    <span class="btn-add-circle" onclick="showAddBox()">+</span>
-                </div>
-
-                <form id="addBox" action="{{ url_for('add_region') }}" method="POST" style="display:none;" class="mb-3 px-2">
-                    <div class="input-group">
-                        <input type="text" name="region_name" class="form-control form-control-sm" placeholder="اسم المنطقة..." required>
-                        <button type="submit" class="btn btn-sm btn-success">حفظ</button>
-                    </div>
-                </form>
-
-                {% for reg in regions %}
-                <div class="region-item">
-                    <a href="{{ url_for('admin', code='A999A', region=reg.name) }}" class="region-name">{{ reg.name }}</a>
-                    
-                    <div class="dropdown">
-                        <div class="dots-menu" data-bs-toggle="dropdown">
-                            <i class="fas fa-ellipsis-v"></i>
-                        </div>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" onclick="alert('خاصية التعديل قيد التطوير')"><i class="fas fa-edit"></i> تعديل الاسم</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}" onclick="return confirm('هل أنت متأكد من حذف هذه المنطقة نهائياً؟')"><i class="fas fa-trash"></i> حذف المنطقة</a></li>
-                        </ul>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-
-            <a href="{{ url_for('admin', code='A999A') }}" class="btn-main btn-admin">⚙️ لوحة التحكم العامة</a>
+    <div class="top-nav">
+        <div class="menu-icon" onclick="openNav()">
+            <i class="fas fa-bars"></i>
         </div>
+        <a href="javascript:history.back()" class="btn-back">
+            <i class="fas fa-chevron-right ms-2"></i> الرجوع
+        </a>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div id="mySidebar" class="sidebar">
+        <span class="closebtn" onclick="closeNav()">&times;</span>
+        <div class="sidebar-header" style="color: white; font-weight: bold; font-size: 22px;">القائمة الرئيسية</div>
+        
+        <a href="{{ url_for('home') }}"><i class="fas fa-home ms-2"></i> الرئيسية</a>
+        
+        <a href="javascript:void(0)" onclick="toggleRegions()">
+            <i class="fas fa-folder-open ms-2"></i> السجلات والمناطق <i class="fas fa-chevron-down float-start mt-1" style="font-size: 12px;"></i>
+        </a>
+        <div id="regionSub" class="region-sub-menu">
+            {% for reg in regions %}
+            <a href="{{ url_for('admin', code='A999A', region=reg.name) }}">{{ reg.name }}</a>
+            {% endfor %}
+            <a href="#" class="add-region-btn" onclick="alert('يمكنك إضافة منطقة من لوحة التحكم العامة')">+ إضافة منطقة جديدة</a>
+        </div>
+
+        <a href="{{ url_for('admin', code='A999A') }}"><i class="fas fa-cog ms-2"></i> لوحة التحكم العامة</a>
+    </div>
+
+    <div class="hero-section">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" class="logo-large" alt="Logo Gov">
+            <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" class="logo-large" alt="Logo Police">
+        </div>
+        <h1 class="welcome-title">نظام إدارة المركبات الرقمي</h1>
+        <p class="text-muted">حكومة الشارقة - القيادة العامة لشرطة الشارقة</p>
+    </div>
+
     <script>
-        function toggleRegions() {
-            var menu = document.getElementById("regionMenu");
-            menu.style.display = (menu.style.display === "block") ? "none" : "block";
+        function openNav() {
+            document.getElementById("mySidebar").style.width = "300px";
         }
-        function showAddBox() {
-            var box = document.getElementById("addBox");
-            box.style.display = (box.style.display === "block") ? "none" : "block";
+
+        function closeNav() {
+            document.getElementById("mySidebar").style.width = "0";
+        }
+
+        function toggleRegions() {
+            var sub = document.getElementById("regionSub");
+            sub.style.display = (sub.style.display === "block") ? "none" : "block";
         }
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
