@@ -7,83 +7,74 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #fdfdfd; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
+        body { background-color: #fdfdfd; font-family: 'Segoe UI', sans-serif; margin: 0; }
         
-        /* الهيدر العلوي */
-        .top-nav { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 1000; }
-        .menu-icon { font-size: 28px; color: #4b3621; cursor: pointer; }
+        /* الهيدر العلوي - لوحة التحكم في الزاوية */
+        .top-bar { padding: 15px 40px; display: flex; justify-content: flex-end; align-items: center; }
+        .btn-admin-top { color: #b8860b; text-decoration: none; font-weight: bold; font-size: 15px; border: 1px solid #b8860b; padding: 5px 15px; border-radius: 8px; transition: 0.3s; }
+        .btn-admin-top:hover { background: #b8860b; color: white; }
+
+        /* منطقة الشعارات */
+        .hero-section { text-align: center; padding-top: 20px; }
+        .logo-large { height: 110px; width: auto; margin: 0 15px; }
+        .welcome-title { color: #4b3621; font-weight: bold; margin-top: 25px; font-size: 28px; }
+
+        /* منطقة السجلات والمناطق في النص */
+        .main-container { max-width: 600px; margin: 40px auto; padding: 20px; text-align: center; }
+        .section-label { color: #8d6e63; font-weight: bold; margin-bottom: 20px; display: block; font-size: 18px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         
-        /* زر الرجوع - مخفي في البداية */
-        #backBtn { display: none; background: #8d6e63; color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: bold; text-decoration: none; cursor: pointer; }
+        .region-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        .btn-region { background: white; color: #4b3621; border: 2px solid #4b3621; padding: 20px; border-radius: 15px; font-weight: bold; text-decoration: none; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .btn-region:hover { background: #4b3621; color: white; transform: translateY(-5px); }
+        .btn-region i { font-size: 24px; color: #b8860b; }
+        .btn-region:hover i { color: white; }
 
-        .hero-section { height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transition: 0.5s; }
-        .logo-large { height: 120px; width: auto; margin: 0 20px; }
-        .welcome-title { color: #4b3621; font-weight: bold; margin-top: 20px; }
-
-        /* منطقة المناطق - تظهر عند الطلب */
-        #regionsArea { display: none; width: 100%; max-width: 500px; margin-top: 20px; animation: fadeIn 0.5s; }
-        .region-card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #eee; }
-        .region-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f5f5f5; }
-        .region-item a { text-decoration: none; color: #4b3621; font-weight: 600; flex-grow: 1; text-align: right; }
-
-        /* Sidebar */
-        .sidebar { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background-color: #3d2b1f; overflow-x: hidden; transition: 0.5s; padding-top: 60px; }
-        .sidebar a { padding: 15px 30px; text-decoration: none; font-size: 18px; color: #dcb057; display: block; border-bottom: 1px solid #4e342e; }
-        .sidebar .closebtn { position: absolute; top: 10px; left: 25px; font-size: 36px; color: white; cursor: pointer; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* زر إضافة منطقة بشكل مرتب تحت */
+        .add-region-wrapper { margin-top: 30px; }
+        .btn-add-new { color: #2e7d32; cursor: pointer; font-weight: bold; font-size: 14px; text-decoration: underline; }
     </style>
 </head>
 <body>
 
-    <div class="top-nav">
-        <div class="menu-icon" onclick="openNav()"><i class="fas fa-bars"></i></div>
-        <button id="backBtn" onclick="showHome()"><i class="fas fa-chevron-right ms-2"></i> الرجوع للرئيسية</button>
+    <div class="top-bar">
+        <a href="{{ url_for('admin', code='A999A') }}" class="btn-admin-top">
+            <i class="fas fa-user-shield ms-1"></i> لوحة التحكم العامة
+        </a>
     </div>
 
-    <div id="mySidebar" class="sidebar">
-        <span class="closebtn" onclick="closeNav()">&times;</span>
-        <a href="javascript:void(0)" onclick="showRegions()"><i class="fas fa-folder-open ms-2"></i> السجلات والمناطق</a>
-        <a href="{{ url_for('admin', code='A999A') }}"><i class="fas fa-cog ms-2"></i> لوحة التحكم العامة</a>
+    <div class="hero-section">
+        <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" class="logo-large">
+        <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" class="logo-large">
+        <h1 class="welcome-title">نظام إدارة المركبات الرقمي</h1>
     </div>
 
-    <div class="hero-section" id="mainHero">
-        <div id="logoArea">
-            <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" class="logo-large">
-            <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" class="logo-large">
-            <h1 class="welcome-title">نظام إدارة المركبات الرقمي</h1>
+    <div class="main-container">
+        <span class="section-label">سجلات المناطق</span>
+        
+        <div class="region-grid">
+            {% for reg in regions %}
+            <a href="{{ url_for('admin', code='A999A', region=reg.name) }}" class="btn-region">
+                <i class="fas fa-map-marked-alt"></i>
+                {{ reg.name }}
+            </a>
+            {% endfor %}
         </div>
 
-        <div id="regionsArea">
-            <div class="region-card">
-                <h4 class="mb-4" style="color: #8d6e63;">اختر منطقة السجل</h4>
-                {% for reg in regions %}
-                <div class="region-item">
-                    <a href="{{ url_for('admin', code='A999A', region=reg.name) }}">{{ reg.name }}</a>
-                    <i class="fas fa-chevron-left" style="color: #ddd; font-size: 12px;"></i>
+        <div class="add-region-wrapper">
+            <span class="btn-add-new" onclick="showAddBox()">+ إضافة منطقة جديدة للسجل</span>
+            <form id="addBox" action="{{ url_for('add_region') }}" method="POST" style="display:none; margin-top: 15px;" class="px-5">
+                <div class="input-group">
+                    <input type="text" name="region_name" class="form-control" placeholder="اسم المنطقة..." required>
+                    <button type="submit" class="btn btn-success">حفظ</button>
                 </div>
-                {% endfor %}
-            </div>
+            </form>
         </div>
     </div>
 
     <script>
-        function openNav() { document.getElementById("mySidebar").style.width = "300px"; }
-        function closeNav() { document.getElementById("mySidebar").style.width = "0"; }
-
-        // وظيفة إظهار المناطق وإخفاء الهوم
-        function showRegions() {
-            closeNav();
-            document.getElementById("logoArea").style.display = "none";
-            document.getElementById("regionsArea").style.display = "block";
-            document.getElementById("backBtn").style.display = "block"; // إظهار زر الرجوع
-        }
-
-        // وظيفة الرجوع للهوم (نفس ما طلبتي)
-        function showHome() {
-            document.getElementById("logoArea").style.display = "block";
-            document.getElementById("regionsArea").style.display = "none";
-            document.getElementById("backBtn").style.display = "none"; // إخفاء زر الرجوع
+        function showAddBox() {
+            var box = document.getElementById("addBox");
+            box.style.display = (box.style.display === "block") ? "none" : "block";
         }
     </script>
 </body>
