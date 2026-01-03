@@ -3,73 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>لوحة التحكم - مراقبة السيارات</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
-        body { background-color: #fdfdfd; font-family: 'Segoe UI', Tahoma, sans-serif; }
-        .top-buttons { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; padding: 20px 20px 0 20px; }
-        .btn-status { background-color: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: bold; }
-        .btn-pdf-dummy { background-color: #2e7d32; color: white; border: none; padding: 8px 15px; border-radius: 5px; font-size: 14px; font-weight: bold; cursor: default; }
+        .admin-actions { margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap; }
+        .btn-pdf { background-color: #2e7d32; color: white; border: none; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .btn-toggle-edit { background-color: #f39c12; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-delete { background-color: #d32f2f; color: white; border: none; padding: 12px 25px; cursor: pointer; border-radius: 5px; margin-top: 15px; font-weight: bold; width: 100%; }
         
-        .alert-success-custom { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; padding: 10px; border-radius: 5px; margin: 0 20px 20px 20px; text-align: center; font-weight: bold; }
+        /* إخفاء عمود التحديد وزر الحذف في البداية */
+        .select-col { display: none; text-align: center; width: 50px; }
+        #deleteBtnContainer { display: none; }
         
-        .table-container { margin: 0 20px; border: 1px solid #ddd; border-radius: 5px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .table { margin-bottom: 0; }
-        .table thead { background-color: #3d2b1f; color: white; }
-        .table th { border: none; padding: 12px; font-size: 14px; text-align: center; }
-        .table td { padding: 12px; font-size: 13px; text-align: center; border-bottom: 1px solid #eee; vertical-align: middle; }
-        
-        .footer-buttons { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .btn-action-gold { background-color: #b8860b; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 16px; width: 100%; transition: 0.3s; }
-        .btn-action-gold:hover { background-color: #966d09; }
-        .btn-action-brown { background-color: #8d6e63; color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 16px; width: 100%; text-decoration: none; text-align: center; transition: 0.3s; }
-        .btn-action-brown:hover { background-color: #6d4c41; color: white; }
+        .edit-mode .select-col { display: table-cell; }
+        .alert { padding: 10px; margin-bottom: 15px; border-radius: 5px; background-color: #e8f5e9; color: #2e7d32; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="top-buttons">
-        <button class="btn-status">تفعيل التعديل والحذف ✨</button>
-        <button class="btn-pdf-dummy">تحميل السجل PDF 📥</button>
+
+    <div class="admin-container">
+        <div class="logo-header">
+            <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" alt="شعار حكومة الشارقة" class="logo left-logo">
+            <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" alt="شعار شرطة الشارقة" class="logo right-logo">
+        </div>
+
+        <h2 style="text-align: center; margin-bottom: 30px;">سجل استخدام المركبات - لوحة تحكم</h2>
+
+        <div class="admin-actions">
+            <a href="{{ url_for('download_pdf', code=request.args.get('code')) }}" class="btn-pdf">📥 تحميل السجل PDF</a>
+            <button type="button" class="btn-toggle-edit" onclick="toggleEditMode()">✏️ تفعيل التعديل والحذف</button>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form id="adminForm" action="{{ url_for('delete_logs', code=request.args.get('code')) }}" method="POST">
+            <div class="data-table-wrapper">
+                <table class="data-table" id="adminTable">
+                    <thead>
+                        <tr>
+                            <th class="select-col">تحديد</th>
+                            <th>#</th>
+                            <th>الاسم الكامل</th>
+                            <th>الرقم العسكري</th>
+                            <th>نوع المركبة</th>
+                            <th>الوقت والتاريخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td class="select-col">
+                                <input type="checkbox" name="log_ids" value="{{ log.id }}">
+                            </td>
+                            <th>{{ log.id }}</th>
+                            <td>{{ log.username }}</td>
+                            <td>{{ log.military_id }}</td>
+                            <td>{{ log.car_type }}</td>
+                            <td>{{ log.timestamp | format_datetime_uae }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="deleteBtnContainer">
+                <button type="submit" class="btn-delete" onclick="return confirm('هل أنت متأكد من حذف السجلات؟')">❌ حذف السجلات المحددة</button>
+            </div>
+        </form>
+
+        <a href="{{ url_for('index') }}" class="back-button" style="display: block; text-align: center; margin-top: 20px; text-decoration: none;">العودة لصفحة الإدخال</a>
     </div>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="alert-success-custom">تم تنفيذ العملية بنجاح! ✅</div>
-      {% endif %}
-    {% endwith %}
-
-    <form action="{{ url_for('delete_logs', code=request.args.get('code')) }}" method="POST">
-        <div class="table-container">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>الاسم الكامل</th>
-                        <th>الرقم العسكري</th>
-                        <th>نوع المركبة</th>
-                        <th>الوقت والتاريخ</th>
-                        <th>تحديد</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in logs %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td style="font-weight: bold;">{{ log.username }}</td>
-                        <td>{{ log.military_id }}</td>
-                        <td>{{ log.car_type }}</td>
-                        <td dir="ltr">{{ log.timestamp | format_datetime_uae }}</td>
-                        <td><input type="checkbox" name="log_ids" value="{{ log.id }}" class="form-check-input"></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="footer-buttons">
-            <button type="submit" class="btn-action-gold">حذف السجلات المحددة ❌</button>
-            <a href="{{ url_for('index') }}" class="btn-action-brown">العودة لصفحة الإدخال</a>
-        </div>
-    </form>
+    <script>
+    function toggleEditMode() {
+        var table = document.getElementById("adminTable");
+        var deleteBtnDiv = document.getElementById("deleteBtnContainer");
+        var btnToggle = document.querySelector(".btn-toggle-edit");
+        
+        table.classList.toggle("edit-mode");
+        
+        if (table.classList.contains("edit-mode")) {
+            deleteBtnDiv.style.display = "block";
+            btnToggle.innerText = "🔒 إلغاء التعديل";
+            btnToggle.style.backgroundColor = "#666";
+        } else {
+            deleteBtnDiv.style.display = "none";
+            btnToggle.innerText = "✏️ تفعيل التعديل والحذف";
+            btnToggle.style.backgroundColor = "#f39c12";
+        }
+    }
+    </script>
 </body>
 </html>
