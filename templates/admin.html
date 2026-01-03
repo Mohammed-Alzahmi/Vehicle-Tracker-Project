@@ -3,98 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم - سجل المركبات</title>
+    <title>لوحة التحكم - الإدارة العامة</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #fdfdfd; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; }
-        .admin-header { background: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; }
-        .admin-logo { height: 75px; width: auto; }
-        .admin-title { color: #4b3621; font-weight: bold; font-size: 22px; margin: 0; }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
         
-        .admin-container { padding: 30px 50px; }
-        .top-actions { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; }
+        /* القائمة الجانبية Sidebar */
+        .sidebar { height: 100vh; width: 250px; position: fixed; top: 0; right: -250px; background: #3d2b1f; transition: 0.3s; z-index: 1000; padding-top: 60px; }
+        .sidebar.active { right: 0; }
+        .sidebar a { padding: 15px 25px; text-decoration: none; font-size: 18px; color: #dcb057; display: block; transition: 0.3s; border-bottom: 1px solid #4e342e; }
+        .sidebar a:hover { background: #4e342e; color: white; }
         
-        /* أزرار التحكم */
-        .btn-edit-mode { background-color: #ff9800; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; transition: 0.3s; }
-        .btn-edit-mode:hover { background-color: #e68a00; }
-        .btn-green-pdf { background-color: #2e7d32; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 14px; }
+        /* زر المنيو ☰ */
+        .menu-btn { font-size: 30px; cursor: pointer; color: #3d2b1f; background: none; border: none; padding: 10px 20px; }
+        
+        .admin-header { background: white; padding: 10px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; }
+        .logo-sm { height: 60px; }
 
-        .table-wrapper { background: white; border: 1px solid #4b3621; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .table thead { background-color: #4b3621; color: white; }
-        .table th, .table td { padding: 15px; text-align: center; vertical-align: middle; font-size: 14px; }
+        .content-area { margin: 30px 50px; transition: 0.3s; }
         
-        /* إخفاء عمود التحديد وزر الحذف في البداية */
-        .select-column, #delete-btn-area { display: none; }
-
-        .btn-gold { background-color: #b8860b; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 18px; width: 100%; margin-top: 20px; }
-        .btn-brown { background-color: #8d6e63; color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 18px; text-decoration: none; text-align: center; width: 100%; display: block; margin-top: 10px; }
+        /* فلتر المناطق */
+        .filter-box { background: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #ddd; display: flex; align-items: center; gap: 15px; }
+        
+        .table-custom { background: white; border-radius: 10px; border: 1px solid #3d2b1f; overflow: hidden; }
+        .table-custom thead { background: #3d2b1f; color: white; }
     </style>
 </head>
 <body>
 
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" onclick="closeNav()" style="font-size: 36px; text-align: left;">&times;</a>
+        <a href="{{ url_for('home') }}">🏠 الرئيسية</a>
+        <a href="#">⚙️ إعدادات المركبات</a>
+        <a href="#">📍 إدارة المناطق</a>
+        <a href="#">📊 مركز الـ QR Code</a>
+    </div>
+
     <header class="admin-header">
-        <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" class="admin-logo">
-        <h1 class="admin-title">سجل استخدام المركبات - لوحة التحكم</h1>
-        <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" class="admin-logo">
+        <button class="menu-btn" onclick="openNav()">☰</button>
+        <h2 style="color: #3d2b1f; font-weight: bold; margin: 0;">لوحة التحكم</h2>
+        <div class="logos">
+            <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" class="logo-sm">
+            <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" class="logo-sm">
+        </div>
     </header>
 
-    <div class="admin-container">
-        <div class="top-actions">
-            <button type="button" class="btn-edit-mode" onclick="toggleEditMode()">🪄 تفعيل التعديل والحذف</button>
-            <div class="btn-green-pdf">📄 تحميل السجل PDF</div>
+    <div class="content-area">
+        <div class="filter-box">
+            <span>تصفية حسب المنطقة:</span>
+            <select class="form-select" style="width: 200px;" onchange="location.href='?code=A999A&region_filter=' + this.value">
+                <option value="الكل">عرض الكل</option>
+                <option value="الشارقة">الشارقة</option>
+                <option value="أبوظبي">أبوظبي</option>
+                <option value="دبي">دبي</option>
+            </select>
         </div>
 
-        <form action="{{ url_for('delete_logs', code=request.args.get('code')) }}" method="POST">
-            <div class="table-wrapper">
-                <table class="table table-hover m-0">
+        <form action="{{ url_for('delete_logs', code='A999A') }}" method="POST">
+            <div class="table-custom">
+                <table class="table table-hover text-center m-0">
                     <thead>
                         <tr>
-                            <th class="select-column">تحديد</th>
-                            <th>#</th>
-                            <th>الاسم الكامل</th>
+                            <th>#</th> <th>الاسم الكامل</th>
                             <th>الرقم العسكري</th>
+                            <th>المنطقة</th>
                             <th>نوع المركبة</th>
-                            <th>الوقت والتاريخ</th>
+                            <th>الوقت</th>
+                            <th>تحديد</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for log in logs %}
                         <tr>
-                            <td class="select-column"><input type="checkbox" name="log_ids" value="{{ log.id }}" class="form-check-input"></td>
-                            <td>{{ loop.index }}</td>
-                            <td style="font-weight: bold;">{{ log.username }}</td>
+                            <td>{{ loop.index }}</td> <td style="font-weight: bold;">{{ log.username }}</td>
                             <td>{{ log.military_id }}</td>
+                            <td><span class="badge bg-secondary">{{ log.region }}</span></td>
                             <td>{{ log.car_type }}</td>
                             <td dir="ltr">{{ log.timestamp | format_datetime_uae }}</td>
+                            <td><input type="checkbox" name="log_ids" value="{{ log.id }}" class="form-check-input"></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-
-            <div id="delete-btn-area">
-                <button type="submit" class="btn-gold">حذف السجلات المختارة ❌</button>
-            </div>
-            <a href="{{ url_for('index') }}" class="btn-brown">العودة للصفحة الرئيسية</a>
+            <button type="submit" class="btn btn-danger mt-3 w-100 py-3 font-weight-bold">حذف السجلات المختارة ❌</button>
         </form>
     </div>
 
     <script>
-        function toggleEditMode() {
-            // إظهار أو إخفاء أعمدة التحديد
-            var cols = document.querySelectorAll('.select-column');
-            var deleteArea = document.getElementById('delete-btn-area');
-            
-            cols.forEach(function(col) {
-                if (col.style.display === "table-cell") {
-                    col.style.display = "none";
-                    deleteArea.style.display = "none";
-                } else {
-                    col.style.display = "table-cell";
-                    deleteArea.style.display = "block";
-                }
-            });
-        }
+        function openNav() { document.getElementById("mySidebar").classList.add("active"); }
+        function closeNav() { document.getElementById("mySidebar").classList.remove("active"); }
     </script>
 </body>
 </html>
