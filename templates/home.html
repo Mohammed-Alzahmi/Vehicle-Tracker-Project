@@ -9,75 +9,91 @@
     <style>
         body { background-color: #fdfdfd; font-family: 'Segoe UI', sans-serif; margin: 0; direction: rtl; }
         
-        /* أيقونة الإعدادات (الترس) فوق على اليمين */
-        .top-bar { padding: 20px 40px; display: flex; justify-content: flex-start; } /* flex-start مع rtl يعني يمين */
+        /* أيقونة الإعدادات فوق على اليمين */
+        .top-bar { padding: 20px 40px; display: flex; justify-content: flex-start; } 
         .settings-link { color: #b8860b; font-size: 28px; transition: 0.3s; text-decoration: none; }
-        .settings-link:hover { transform: rotate(90deg); color: #4b3621; }
+        .settings-link:hover { transform: rotate(90deg); }
 
         .hero-section { text-align: center; padding-top: 10px; }
         .logo-large { height: 110px; width: auto; margin: 0 15px; }
         .welcome-title { color: #4b3621; font-weight: bold; margin-top: 25px; font-size: 28px; }
 
-        /* حاوية المناطق في النص */
-        .main-container { max-width: 500px; margin: 40px auto; padding: 20px; }
-        .section-label { color: #8d6e63; font-weight: bold; margin-bottom: 20px; display: block; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; text-align: center; }
+        /* الشكل الجديم: المربعات (Grid) */
+        .main-container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .section-label { color: #8d6e63; font-weight: bold; margin-bottom: 30px; display: block; font-size: 18px; border-bottom: 2px solid #eee; padding-bottom: 10px; text-align: center; }
         
-        .region-list { background: white; border-radius: 15px; border: 1px solid #eee; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
-        .region-item { display: flex; justify-content: space-between; align-items: center; padding: 18px 25px; border-bottom: 1px solid #f9f9f9; }
-        .region-link { text-decoration: none; color: #4b3621; font-weight: 600; font-size: 18px; flex-grow: 1; text-align: right; }
+        .region-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        
+        .region-card { 
+            background: white; 
+            border: 2px solid #4b3621; 
+            border-radius: 15px; 
+            padding: 25px; 
+            text-align: center; 
+            position: relative; 
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .region-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        
+        .region-link { text-decoration: none; color: #4b3621; font-weight: bold; font-size: 20px; }
+        .region-card i.main-icon { font-size: 35px; color: #b8860b; }
 
-        /* منيو الثلاث نقاط */
-        .dots-btn { color: #ccc; cursor: pointer; padding: 5px 10px; font-size: 20px; }
-        .dropdown-menu { border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border: none; text-align: right; }
-        .dropdown-item { padding: 10px 20px; font-size: 14px; color: #4b3621; }
-        .dropdown-item i { margin-left: 10px; color: #8d6e63; }
+        /* منيو الثلاث نقاط داخل المربع */
+        .dots-wrapper { position: absolute; top: 10px; left: 10px; }
+        .dots-btn { color: #ccc; cursor: pointer; font-size: 18px; }
+        .dropdown-menu { text-align: right; border-radius: 10px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
 
-        .btn-add-text { color: #2e7d32; cursor: pointer; font-weight: bold; font-size: 15px; display: block; margin-top: 20px; text-align: center; }
+        .btn-add-area { text-align: center; margin-top: 40px; }
+        .btn-add-text { color: #2e7d32; cursor: pointer; font-weight: bold; text-decoration: underline; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <a href="{{ url_for('admin', code='A999A') }}" class="settings-link">
-            <i class="fas fa-cog"></i>
-        </a>
+        <a href="{{ url_for('admin', code='A999A') }}" class="settings-link"><i class="fas fa-cog"></i></a>
     </div>
 
     <div class="hero-section">
         <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" class="logo-large">
-        <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" class="logo-large">
-        <h1 class="welcome-title">نظام إدارة المركبات الرقمي</h1>
+        <img src="{{ url_for('static', filename='logo_shj_police.png') }}" class="logo-large"> <h1 class="welcome-title">نظام إدارة المركبات الرقمي</h1>
     </div>
 
     <div class="main-container">
         <span class="section-label">سجلات المناطق</span>
         
-        <div class="region-list">
+        <div class="region-grid">
             {% for reg in regions %}
-            <div class="region-item">
-                <a href="{{ url_for('admin', code='A999A', region=reg.name) }}" class="region-link">{{ reg.name }}</a>
-                
-                <div class="dropdown">
-                    <div class="dots-btn" data-bs-toggle="dropdown">
-                        <i class="fas fa-ellipsis-v"></i>
+            <div class="region-card">
+                <div class="dots-wrapper">
+                    <div class="dropdown">
+                        <div class="dots-btn" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></div>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-pen ms-2"></i>تعديل</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}" onclick="return confirm('حذف؟')"><i class="fas fa-trash ms-2"></i>حذف</a></li>
+                        </ul>
                     </div>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-pen"></i> تعديل الاسم</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}" onclick="return confirm('حذف المنطقة؟')"><i class="fas fa-trash-alt"></i> حذف</a></li>
-                    </ul>
                 </div>
+
+                <i class="fas fa-map-marker-alt main-icon"></i>
+                <a href="{{ url_for('admin', code='A999A', region=reg.name) }}" class="region-link">{{ reg.name }}</a>
             </div>
             {% endfor %}
         </div>
 
-        <span class="btn-add-text" onclick="showAddBox()">+ إضافة منطقة جديدة</span>
-        <form id="addBox" action="{{ url_for('add_region') }}" method="POST" style="display:none; margin-top: 15px;">
-            <div class="input-group">
-                <input type="text" name="region_name" class="form-control" placeholder="اسم المنطقة..." required>
-                <button type="submit" class="btn btn-success">إضافة</button>
-            </div>
-        </form>
+        <div class="btn-add-area">
+            <span class="btn-add-text" onclick="showAddBox()">+ إضافة منطقة جديدة</span>
+            <form id="addBox" action="{{ url_for('add_region') }}" method="POST" style="display:none; margin-top: 15px; max-width: 400px; margin-left: auto; margin-right: auto;">
+                <div class="input-group">
+                    <input type="text" name="region_name" class="form-control" placeholder="اسم المنطقة..." required>
+                    <button type="submit" class="btn btn-success">إضافة</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
