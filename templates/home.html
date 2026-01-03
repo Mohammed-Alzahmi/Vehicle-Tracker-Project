@@ -9,36 +9,42 @@
     <style>
         body { background-color: #fdfdfd; font-family: 'Segoe UI', sans-serif; margin: 0; }
         
-        /* الهيدر العلوي - لوحة التحكم في الزاوية */
-        .top-bar { padding: 15px 40px; display: flex; justify-content: flex-end; align-items: center; }
-        .btn-admin-top { color: #b8860b; text-decoration: none; font-weight: bold; font-size: 15px; border: 1px solid #b8860b; padding: 5px 15px; border-radius: 8px; transition: 0.3s; }
-        .btn-admin-top:hover { background: #b8860b; color: white; }
+        /* أيقونة الإعدادات فوق على اليمين */
+        .top-bar { padding: 20px 40px; display: flex; justify-content: flex-start; align-items: center; }
+        .settings-link { color: #b8860b; font-size: 28px; transition: 0.3s; text-decoration: none; }
+        .settings-link:hover { transform: rotate(90deg); color: #4b3621; }
 
         /* منطقة الشعارات */
-        .hero-section { text-align: center; padding-top: 20px; }
+        .hero-section { text-align: center; padding-top: 10px; }
         .logo-large { height: 110px; width: auto; margin: 0 15px; }
         .welcome-title { color: #4b3621; font-weight: bold; margin-top: 25px; font-size: 28px; }
 
-        /* منطقة السجلات والمناطق في النص */
-        .main-container { max-width: 600px; margin: 40px auto; padding: 20px; text-align: center; }
-        .section-label { color: #8d6e63; font-weight: bold; margin-bottom: 20px; display: block; font-size: 18px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        /* منطقة السجلات والمناطق */
+        .main-container { max-width: 550px; margin: 40px auto; padding: 20px; }
+        .section-label { color: #8d6e63; font-weight: bold; margin-bottom: 20px; display: block; font-size: 18px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; text-align: center; }
         
-        .region-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .btn-region { background: white; color: #4b3621; border: 2px solid #4b3621; padding: 20px; border-radius: 15px; font-weight: bold; text-decoration: none; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-        .btn-region:hover { background: #4b3621; color: white; transform: translateY(-5px); }
-        .btn-region i { font-size: 24px; color: #b8860b; }
-        .btn-region:hover i { color: white; }
+        .region-list { background: white; border-radius: 15px; border: 1px solid #eee; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .region-item { display: flex; justify-content: space-between; align-items: center; padding: 18px 25px; border-bottom: 1px solid #f9f9f9; transition: 0.2s; }
+        .region-item:hover { background-color: #fcfcfc; }
+        .region-link { text-decoration: none; color: #4b3621; font-weight: 600; font-size: 18px; flex-grow: 1; text-align: right; }
 
-        /* زر إضافة منطقة بشكل مرتب تحت */
-        .add-region-wrapper { margin-top: 30px; }
-        .btn-add-new { color: #2e7d32; cursor: pointer; font-weight: bold; font-size: 14px; text-decoration: underline; }
+        /* منيو الثلاث نقاط */
+        .dots-btn { color: #ccc; cursor: pointer; padding: 5px 10px; font-size: 20px; transition: 0.3s; }
+        .dots-btn:hover { color: #4b3621; }
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); border: none; text-align: right; }
+        .dropdown-item { padding: 10px 20px; font-size: 14px; color: #4b3621; }
+        .dropdown-item i { margin-left: 10px; color: #8d6e63; }
+
+        /* إضافة منطقة */
+        .add-area { text-align: center; margin-top: 25px; }
+        .btn-add-text { color: #2e7d32; cursor: pointer; font-weight: bold; font-size: 15px; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <a href="{{ url_for('admin', code='A999A') }}" class="btn-admin-top">
-            <i class="fas fa-user-shield ms-1"></i> لوحة التحكم العامة
+        <a href="{{ url_for('admin', code='A999A') }}" class="settings-link" title="لوحة التحكم">
+            <i class="fas fa-cog"></i>
         </a>
     </div>
 
@@ -51,31 +57,16 @@
     <div class="main-container">
         <span class="section-label">سجلات المناطق</span>
         
-        <div class="region-grid">
+        <div class="region-list">
             {% for reg in regions %}
-            <a href="{{ url_for('admin', code='A999A', region=reg.name) }}" class="btn-region">
-                <i class="fas fa-map-marked-alt"></i>
-                {{ reg.name }}
-            </a>
-            {% endfor %}
-        </div>
-
-        <div class="add-region-wrapper">
-            <span class="btn-add-new" onclick="showAddBox()">+ إضافة منطقة جديدة للسجل</span>
-            <form id="addBox" action="{{ url_for('add_region') }}" method="POST" style="display:none; margin-top: 15px;" class="px-5">
-                <div class="input-group">
-                    <input type="text" name="region_name" class="form-control" placeholder="اسم المنطقة..." required>
-                    <button type="submit" class="btn btn-success">حفظ</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        function showAddBox() {
-            var box = document.getElementById("addBox");
-            box.style.display = (box.style.display === "block") ? "none" : "block";
-        }
-    </script>
-</body>
-</html>
+            <div class="region-item">
+                <a href="{{ url_for('admin', code='A999A', region=reg.name) }}" class="region-link">{{ reg.name }}</a>
+                
+                <div class="dropdown">
+                    <div class="dots-btn" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </div>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="alert('تعديل اسم المنطقة قيد التطوير')"><i class="fas fa-pen"></i> تعديل الاسم</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger"
