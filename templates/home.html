@@ -7,87 +7,84 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background-color: #fdfdfd; font-family: 'Segoe UI', sans-serif; margin: 0; overflow-x: hidden; }
+        body { background-color: #fdfdfd; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; }
         
         /* الهيدر العلوي */
         .top-nav { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 1000; }
-        .menu-icon { font-size: 28px; color: #4b3621; cursor: pointer; transition: 0.3s; }
-        .btn-back { background: #8d6e63; color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: bold; text-decoration: none; font-size: 14px; }
-        .btn-back:hover { background: #6d4c41; color: white; }
+        .menu-icon { font-size: 28px; color: #4b3621; cursor: pointer; }
+        
+        /* زر الرجوع - مخفي في البداية */
+        #backBtn { display: none; background: #8d6e63; color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: bold; text-decoration: none; cursor: pointer; }
 
-        /* الشعارات في النص */
-        .hero-section { height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .logo-container { display: flex; gap: 40px; margin-bottom: 20px; }
-        .logo-large { height: 120px; width: auto; }
-        .welcome-title { color: #4b3621; font-weight: bold; margin-top: 20px; letter-spacing: 1px; }
+        .hero-section { height: 80vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; transition: 0.5s; }
+        .logo-large { height: 120px; width: auto; margin: 0 20px; }
+        .welcome-title { color: #4b3621; font-weight: bold; margin-top: 20px; }
 
-        /* القائمة الجانبية Sidebar */
-        .sidebar { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background-color: #3d2b1f; overflow-x: hidden; transition: 0.5s; padding-top: 60px; box-shadow: -5px 0 15px rgba(0,0,0,0.2); }
-        .sidebar a, .sidebar-header { padding: 15px 30px; text-decoration: none; font-size: 18px; color: #dcb057; display: block; transition: 0.3s; border-bottom: 1px solid #4e342e; }
-        .sidebar a:hover { background-color: #4e342e; color: white; }
+        /* منطقة المناطق - تظهر عند الطلب */
+        #regionsArea { display: none; width: 100%; max-width: 500px; margin-top: 20px; animation: fadeIn 0.5s; }
+        .region-card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #eee; }
+        .region-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f5f5f5; }
+        .region-item a { text-decoration: none; color: #4b3621; font-weight: 600; flex-grow: 1; text-align: right; }
+
+        /* Sidebar */
+        .sidebar { height: 100%; width: 0; position: fixed; z-index: 2000; top: 0; right: 0; background-color: #3d2b1f; overflow-x: hidden; transition: 0.5s; padding-top: 60px; }
+        .sidebar a { padding: 15px 30px; text-decoration: none; font-size: 18px; color: #dcb057; display: block; border-bottom: 1px solid #4e342e; }
         .sidebar .closebtn { position: absolute; top: 10px; left: 25px; font-size: 36px; color: white; cursor: pointer; }
-        
-        /* تنسيق قائمة المناطق داخل السايد بار */
-        .region-sub-menu { background: #2d1f16; display: none; }
-        .region-sub-menu a { font-size: 15px; padding-right: 50px; border-bottom: 1px solid #3d2b1f; color: #fff; }
-        
-        .add-region-btn { color: #2ecc71 !important; font-weight: bold; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div class="top-nav">
-        <div class="menu-icon" onclick="openNav()">
-            <i class="fas fa-bars"></i>
-        </div>
-        <a href="javascript:history.back()" class="btn-back">
-            <i class="fas fa-chevron-right ms-2"></i> الرجوع
-        </a>
+        <div class="menu-icon" onclick="openNav()"><i class="fas fa-bars"></i></div>
+        <button id="backBtn" onclick="showHome()"><i class="fas fa-chevron-right ms-2"></i> الرجوع للرئيسية</button>
     </div>
 
     <div id="mySidebar" class="sidebar">
         <span class="closebtn" onclick="closeNav()">&times;</span>
-        <div class="sidebar-header" style="color: white; font-weight: bold; font-size: 22px;">القائمة الرئيسية</div>
-        
-        <a href="{{ url_for('home') }}"><i class="fas fa-home ms-2"></i> الرئيسية</a>
-        
-        <a href="javascript:void(0)" onclick="toggleRegions()">
-            <i class="fas fa-folder-open ms-2"></i> السجلات والمناطق <i class="fas fa-chevron-down float-start mt-1" style="font-size: 12px;"></i>
-        </a>
-        <div id="regionSub" class="region-sub-menu">
-            {% for reg in regions %}
-            <a href="{{ url_for('admin', code='A999A', region=reg.name) }}">{{ reg.name }}</a>
-            {% endfor %}
-            <a href="#" class="add-region-btn" onclick="alert('يمكنك إضافة منطقة من لوحة التحكم العامة')">+ إضافة منطقة جديدة</a>
-        </div>
-
+        <a href="javascript:void(0)" onclick="showRegions()"><i class="fas fa-folder-open ms-2"></i> السجلات والمناطق</a>
         <a href="{{ url_for('admin', code='A999A') }}"><i class="fas fa-cog ms-2"></i> لوحة التحكم العامة</a>
     </div>
 
-    <div class="hero-section">
-        <div class="logo-container">
-            <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" class="logo-large" alt="Logo Gov">
-            <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" class="logo-large" alt="Logo Police">
+    <div class="hero-section" id="mainHero">
+        <div id="logoArea">
+            <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" class="logo-large">
+            <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" class="logo-large">
+            <h1 class="welcome-title">نظام إدارة المركبات الرقمي</h1>
         </div>
-        <h1 class="welcome-title">نظام إدارة المركبات الرقمي</h1>
-        <p class="text-muted">حكومة الشارقة - القيادة العامة لشرطة الشارقة</p>
+
+        <div id="regionsArea">
+            <div class="region-card">
+                <h4 class="mb-4" style="color: #8d6e63;">اختر منطقة السجل</h4>
+                {% for reg in regions %}
+                <div class="region-item">
+                    <a href="{{ url_for('admin', code='A999A', region=reg.name) }}">{{ reg.name }}</a>
+                    <i class="fas fa-chevron-left" style="color: #ddd; font-size: 12px;"></i>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
     <script>
-        function openNav() {
-            document.getElementById("mySidebar").style.width = "300px";
+        function openNav() { document.getElementById("mySidebar").style.width = "300px"; }
+        function closeNav() { document.getElementById("mySidebar").style.width = "0"; }
+
+        // وظيفة إظهار المناطق وإخفاء الهوم
+        function showRegions() {
+            closeNav();
+            document.getElementById("logoArea").style.display = "none";
+            document.getElementById("regionsArea").style.display = "block";
+            document.getElementById("backBtn").style.display = "block"; // إظهار زر الرجوع
         }
 
-        function closeNav() {
-            document.getElementById("mySidebar").style.width = "0";
-        }
-
-        function toggleRegions() {
-            var sub = document.getElementById("regionSub");
-            sub.style.display = (sub.style.display === "block") ? "none" : "block";
+        // وظيفة الرجوع للهوم (نفس ما طلبتي)
+        function showHome() {
+            document.getElementById("logoArea").style.display = "block";
+            document.getElementById("regionsArea").style.display = "none";
+            document.getElementById("backBtn").style.display = "none"; // إخفاء زر الرجوع
         }
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
