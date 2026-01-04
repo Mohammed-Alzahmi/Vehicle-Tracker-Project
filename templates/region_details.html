@@ -2,85 +2,81 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>سجلات {{ region }}</title>
+    <title>سجل {{ region }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #f8f9fa; padding: 20px; font-family: sans-serif; }
-        .action-bar { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .delete-checkbox { display: none; width: 20px; height: 20px; }
-        #qr-mini { position: fixed; bottom: 20px; left: 20px; cursor: pointer; background: white; padding: 10px; border-radius: 50%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        body { background: #f8f9fa; padding: 20px; font-family: 'Segoe UI', sans-serif; }
+        .table-box { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        #qr-trigger { position: fixed; bottom: 30px; left: 30px; cursor: pointer; background: white; padding: 10px; border-radius: 15px; border: 2px solid #b8860b; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; z-index: 1000; }
+        .qr-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; }
+        .qr-content { background: white; padding: 30px; border-radius: 20px; text-align: center; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <div class="action-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <h3>سجل منطقة: <span class="text-primary">{{ region }}</span></h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold">سجل حركة: <span style="color: #b8860b;">{{ region }}</span></h2>
             <div class="d-flex gap-2">
-                <button class="btn btn-warning btn-sm" onclick="toggleSelect()">
-                    <i class="fas fa-check-square"></i> تحديد للحذف
-                </button>
-                <button id="deleteBtn" class="btn btn-danger btn-sm" style="display:none;" onclick="deleteSelected()">
-                    تأكيد الحذف
-                </button>
-                <a href="{{ url_for('manage_cars', id=reg_id) }}" class="btn btn-info btn-sm text-white">تعديل أنواع السيارات</a>
+                <a href="{{ url_for('manage_cars', id=reg_id) }}" class="btn btn-info text-white btn-sm"><i class="fas fa-car-side"></i> تعديل أنواع السيارات</a>
+                <button class="btn btn-warning btn-sm" onclick="toggleSelect()"><i class="fas fa-tasks"></i> تحديد للحذف</button>
+                <button id="deleteBtn" class="btn btn-danger btn-sm" style="display:none;" onclick="deleteSelected()">تأكيد الحذف</button>
                 <a href="/" class="btn btn-secondary btn-sm">رجوع</a>
             </div>
         </div>
-
-        <table class="table table-hover bg-white rounded shadow-sm">
-            <thead class="table-dark">
-                <tr>
-                    <th class="select-col" style="display:none;">#</th>
-                    <th>الاسم</th>
-                    <th>الرقم العسكري</th>
-                    <th>السيارة</th>
-                    <th>رقم السيارة</th>
-                    <th>الوقت</th>
-                </tr>
-            </thead>
-            <tbody id="logsTable">
-                {% for log in logs %}
-                <tr id="row-{{ log.id }}">
-                    <td class="select-col" style="display:none;">
-                        <input type="checkbox" class="delete-checkbox" value="{{ log.id }}">
-                    </td>
-                    <td>{{ log.username }}</td>
-                    <td>{{ log.military_id }}</td>
-                    <td>{{ log.car_type }}</td>
-                    <td><span class="badge bg-light text-dark border">{{ log.car_plate }}</span></td>
-                    <td>{{ log.timestamp.strftime('%H:%M - %Y/%m/%d') }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-box">
+            <table class="table table-hover mb-0 text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="select-col" style="display:none;">إختيار</th>
+                        <th>الاسم</th><th>الرقم العسكري</th><th>السيارة</th><th>رقم السيارة</th><th>الوقت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="select-col" style="display:none;"><input type="checkbox" class="delete-checkbox" value="{{ log.id }}"></td>
+                        <td>{{ log.username }}</td><td>{{ log.military_id }}</td><td>{{ log.car_type }}</td>
+                        <td><span class="badge bg-light text-dark border">{{ log.car_plate }}</span></td>
+                        <td>{{ log.timestamp.strftime('%H:%M - %m/%d') }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <div id="qr-mini" onclick="alert('سوي سكان للطباعة')">
+    <div id="qr-trigger" onclick="openQR()">
         <div id="small_qr"></div>
+        <small class="d-block mt-1 fw-bold">تكبير QR</small>
     </div>
-
+    <div class="qr-modal" id="qrModal" onclick="closeQR()">
+        <div class="qr-content" onclick="event.stopPropagation()">
+            <h4 class="mb-4">باركود التسجيل: {{ region }}</h4>
+            <div id="large_qr" class="d-flex justify-content-center mb-4"></div>
+            <button class="btn btn-dark w-100" onclick="window.print()">طباعة الباركود</button>
+            <button class="btn btn-link text-muted mt-2" onclick="closeQR()">إغلاق</button>
+        </div>
+    </div>
     <script>
-        new QRCode(document.getElementById("small_qr"), { text: "{{ qr_link }}", width: 50, height: 50 });
-
+        new QRCode(document.getElementById("small_qr"), { text: "{{ qr_link }}", width: 60, height: 60 });
+        new QRCode(document.getElementById("large_qr"), { text: "{{ qr_link }}", width: 250, height: 250 });
+        function openQR() { document.getElementById('qrModal').style.display = 'flex'; }
+        function closeQR() { document.getElementById('qrModal').style.display = 'none'; }
         function toggleSelect() {
             const cols = document.querySelectorAll('.select-col');
-            const checks = document.querySelectorAll('.delete-checkbox');
             const btn = document.getElementById('deleteBtn');
-            cols.forEach(c => c.style.display = c.style.display === 'none' ? 'table-cell' : 'none');
-            checks.forEach(c => c.style.display = c.style.display === 'none' ? 'block' : 'none');
-            btn.style.display = btn.style.display === 'none' ? 'inline-block' : 'none';
+            cols.forEach(c => c.style.display = (c.style.display === 'none' ? 'table-cell' : 'none'));
+            btn.style.display = (btn.style.display === 'none' ? 'inline-block' : 'none');
         }
-
         function deleteSelected() {
-            const selected = Array.from(document.querySelectorAll('.delete-checkbox:checked')).map(cb => cb.value);
-            if (selected.length === 0) return alert('يرجى تحديد سجلات أولاً');
-            if (confirm('هل أنت متأكد من حذف السجلات المختارة؟')) {
+            const ids = Array.from(document.querySelectorAll('.delete-checkbox:checked')).map(cb => cb.value);
+            if (ids.length === 0) return alert('حدد سجلات أولاً');
+            if (confirm('حذف السجلات المختارة؟')) {
                 fetch('/delete_logs', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ids: selected})
+                    body: JSON.stringify({ids: ids})
                 }).then(() => location.reload());
             }
         }

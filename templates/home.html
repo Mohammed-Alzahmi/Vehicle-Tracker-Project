@@ -3,50 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام الإدارة الرقمي</title>
+    <title>نظام إدارة السجلات الرقمي</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #fdfdfd; font-family: sans-serif; direction: rtl; }
-        .hero { text-align: center; padding: 40px 0; }
-        .logo-box img { height: 90px; margin: 0 15px; }
-        .region-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 20px; }
-        .card-region { background: white; border: 2px solid #b8860b; border-radius: 15px; padding: 30px; text-align: center; cursor: pointer; text-decoration: none; color: #333; transition: 0.3s; position: relative; }
-        .card-region:hover { background: #fffcf5; transform: translateY(-5px); }
-        .dots { position: absolute; top: 10px; left: 10px; color: #ccc; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
+        .hero-header { background: white; padding: 30px; text-align: center; border-bottom: 3px solid #b8860b; margin-bottom: 40px; }
+        .main-logo { height: 100px; margin-bottom: 15px; }
+        .region-card { 
+            background: white; border-radius: 20px; padding: 40px 20px; 
+            text-align: center; border: 1px solid #e0e0e0; transition: 0.3s;
+            cursor: pointer; text-decoration: none; color: #333; display: block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+        .region-card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border-color: #b8860b; }
+        .folder-icon { font-size: 50px; color: #b8860b; margin-bottom: 15px; }
+        .dots-menu { position: absolute; top: 15px; left: 15px; color: #ccc; cursor: pointer; z-index: 10; }
+        .add-section { max-width: 500px; margin: 40px auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
-    <div class="hero">
-        <div class="logo-box">
-            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/33/Sharjah_Police_Logo.png/200px-Sharjah_Police_Logo.png">
-        </div>
-        <h2 class="mt-3">نظام إدارة السجلات</h2>
+    <div class="hero-header">
+        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/33/Sharjah_Police_Logo.png/200px-Sharjah_Police_Logo.png" class="main-logo">
+        <h2 style="color: #4b3621; font-weight: bold;">نظام إدارة السجلات</h2>
+        <p class="text-muted">القيادة العامة لشرطة الشارقة</p>
     </div>
-
     <div class="container">
-        <div class="region-grid">
+        <div class="row g-4">
             {% for reg in regions %}
-            <div style="position: relative;">
-                <a href="{{ url_for('view_logs', region_name=reg.name) }}" class="card-region d-block">
-                    <i class="fas fa-folder-open fa-2x mb-2" style="color: #b8860b;"></i>
-                    <h4>{{ reg.name }}</h4>
-                </a>
-                <div class="dropdown">
-                    <div class="dots" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></div>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{ url_for('manage_cars', id=reg.id) }}">تعديل أنواع السيارات</a></li>
-                        <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}">حذف المنطقة</a></li>
+            <div class="col-md-4 position-relative">
+                <div class="dropdown dots-menu">
+                    <i class="fas fa-ellipsis-v" data-bs-toggle="dropdown"></i>
+                    <ul class="dropdown-menu shadow">
+                        <li><a class="dropdown-item" href="{{ url_for('view_logs', region_name=reg.name) }}"><i class="fas fa-edit ms-2"></i>تعديل</a></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}"><i class="fas fa-trash ms-2"></i>حذف المنطقة</a></li>
                     </ul>
                 </div>
+                <a href="{{ url_for('view_logs', region_name=reg.name) }}" class="region-card text-decoration-none">
+                    <i class="fas fa-folder-open folder-icon"></i>
+                    <h4 class="fw-bold">{{ reg.name }}</h4>
+                </a>
             </div>
             {% endfor %}
         </div>
-
-        <div class="text-center mt-4">
-            <form action="/add_region" method="POST" class="d-inline-flex gap-2">
-                <input type="text" name="region_name" placeholder="اسم منطقة جديدة" class="form-control" required>
-                <button type="submit" class="btn btn-success">إضافة</button>
+        <div class="add-section text-center mt-5">
+            <h6 class="mb-3 text-muted">إضافة منطقة جديدة</h6>
+            <form action="/add_region" method="POST" class="d-flex gap-2">
+                <input type="text" name="region_name" class="form-control" placeholder="اسم المنطقة..." required>
+                <button type="submit" class="btn btn-dark">إضافة</button>
             </form>
         </div>
     </div>

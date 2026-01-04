@@ -25,8 +25,6 @@ class Region(db.Model):
     allowed_cars = db.Column(db.String(500), default="نيسان,تويوتا,لكزس,مرسيدس")
 
 with app.app_context():
-    # الخطوة السحرية: بيمسح القديم ويسوي الجديد
-    db.drop_all() 
     db.create_all()
 
 @app.route('/')
