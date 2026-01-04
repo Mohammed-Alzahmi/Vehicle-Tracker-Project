@@ -3,59 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة سجل المركبات</title>
+    <title>نظام إدارة المركبات الرقمي</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { background-color: #fdfdfd; font-family: 'Segoe UI', sans-serif; margin: 0; direction: rtl; }
         .top-bar { padding: 20px 40px; display: flex; justify-content: flex-start; } 
         .settings-link { color: #b8860b; font-size: 28px; text-decoration: none; }
-        .hero-section { text-align: center; padding-top: 10px; }
-        .logo-large { height: 100px; width: auto; margin: 0 15px; }
-        .welcome-title { color: #4b3621; font-weight: bold; margin-top: 25px; font-size: 28px; }
-
-        .main-container { max-width: 800px; margin: 40px auto; padding: 20px; }
-        .region-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
         
+        .hero-section { text-align: center; padding: 20px 0; }
+        /* تصحيح قياسات الشعارات */
+        .logo-container { display: flex; justify-content: center; align-items: center; gap: 30px; flex-wrap: wrap; }
+        .logo-large { height: 100px; width: auto; object-fit: contain; }
+        .welcome-title { color: #4b3621; font-weight: bold; margin-top: 20px; font-size: 28px; }
+        .sub-title { color: #8b7355; font-size: 16px; margin-bottom: 30px; }
+
+        .main-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        .region-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; }
+        
+        /* تصميم المربع (الكارد) */
         .region-card-wrapper { position: relative; }
         .region-card { 
-            background: white; border: 2px solid #4b3621; border-radius: 15px; padding: 25px; 
-            text-align: center; transition: 0.3s; cursor: pointer; text-decoration: none; display: block;
+            background: white; 
+            border: 2px solid #4b3621; 
+            border-radius: 15px; 
+            padding: 35px 20px; 
+            text-align: center; 
+            transition: all 0.3s ease; 
+            cursor: pointer; 
+            text-decoration: none; 
+            display: block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .region-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .region-card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); border-color: #b8860b; }
         .region-name { color: #4b3621; font-weight: bold; font-size: 22px; margin-top: 15px; }
         
-        .dots-btn { position: absolute; top: 10px; left: 10px; color: #ccc; cursor: pointer; padding: 5px; z-index: 10; }
-        .dropdown-menu { text-align: right; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-radius: 10px; }
+        /* منيو الثلاث نقاط */
+        .dots-btn { position: absolute; top: 15px; left: 15px; color: #d1d1d1; cursor: pointer; padding: 5px; z-index: 10; transition: 0.3s; }
+        .dots-btn:hover { color: #b8860b; }
+        .dropdown-menu { text-align: right; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-radius: 12px; padding: 10px; }
+        .dropdown-item { padding: 8px 20px; border-radius: 8px; font-size: 14px; }
+
+        .add-region-btn { color: #2e7d32; text-decoration: none; font-weight: bold; font-size: 15px; transition: 0.3s; }
+        .add-region-btn:hover { color: #1b5e20; text-decoration: underline; }
     </style>
 </head>
 <body>
 
     <div class="top-bar">
-        <a href="{{ url_for('admin', code='A999A') }}" class="settings-link"><i class="fas fa-cog"></i></a>
+        <a href="/admin?code=A999A" class="settings-link" title="لوحة التحكم العامة">
+            <i class="fas fa-cog"></i>
+        </a>
     </div>
 
     <div class="hero-section">
-        <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" class="logo-large">
-        <img src="/static/logo_sharjah_police.png" class="logo-large" onerror="this.src='https://upload.wikimedia.org/wikipedia/en/thumb/3/33/Sharjah_Police_Logo.png/200px-Sharjah_Police_Logo.png'">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='logo_gov_sharjah.png') }}" 
+                 onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Emblem_of_Sharjah.svg/200px-Emblem_of_Sharjah.svg.png'" 
+                 class="logo-large">
+            
+            <img src="{{ url_for('static', filename='logo_sharjah_police.png') }}" 
+                 onerror="this.src='https://upload.wikimedia.org/wikipedia/en/thumb/3/33/Sharjah_Police_Logo.png/200px-Sharjah_Police_Logo.png'" 
+                 class="logo-large">
+        </div>
         <h1 class="welcome-title">نظام إدارة المركبات الرقمي</h1>
+        <p class="sub-title">حكومة الشارقة - القيادة العامة لشرطة الشارقة</p>
     </div>
 
     <div class="main-container">
+        <div class="text-center mb-4">
+            <h5 style="color: #8b7355; border-bottom: 1px solid #eee; display: inline-block; padding-bottom: 10px;">سجلات المناطق</h5>
+        </div>
+
         <div class="region-grid">
             {% for reg in regions %}
             <div class="region-card-wrapper">
                 <a href="{{ url_for('region_qr', region_name=reg.name) }}" class="region-card">
-                    <i class="fas fa-qrcode" style="font-size: 40px; color: #b8860b;"></i>
+                    <i class="fas fa-map-marker-alt" style="font-size: 35px; color: #b8860b;"></i>
                     <div class="region-name">{{ reg.name }}</div>
                 </a>
 
                 <div class="dropdown">
-                    <div class="dots-btn" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></div>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-car ms-2"></i>تعديل السيارات</a></li>
+                    <div class="dots-btn" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </div>
+                    <ul class="dropdown-menu shadow">
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('manage_cars', id=reg.id) }}">
+                                <i class="fas fa-car ms-2 text-warning"></i>تعديل أنواع السيارات
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('region_qr', region_name=reg.name) }}">
+                                <i class="fas fa-qrcode ms-2 text-info"></i>عرض الباركود
+                            </a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}"><i class="fas fa-trash ms-2"></i>حذف</a></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}" onclick="return confirm('هل أنت متأكد من حذف هذه المنطقة؟')">
+                                <i class="fas fa-trash ms-2"></i>حذف المنطقة
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -63,15 +111,24 @@
         </div>
         
         <div class="text-center mt-5">
-            <button class="btn btn-outline-success btn-sm" onclick="showAddBox()">+ إضافة منطقة جديدة</button>
-            <form id="addBox" action="{{ url_for('add_region') }}" method="POST" style="display:none; margin-top: 15px; max-width: 300px; margin-inline: auto;">
-                <input type="text" name="region_name" class="form-control mb-2" placeholder="اسم المنطقة">
-                <button type="submit" class="btn btn-success btn-sm w-100">حفظ</button>
+            <a href="javascript:void(0)" class="add-region-btn" onclick="showAddBox()">
+                <i class="fas fa-plus-circle ms-1"></i>إضافة منطقة جديدة للسجل
+            </a>
+            
+            <form id="addBox" action="{{ url_for('add_region') }}" method="POST" style="display:none; margin-top: 20px; max-width: 350px; margin-inline: auto;" class="card p-3 shadow-sm">
+                <input type="text" name="region_name" class="form-control mb-2 text-center" placeholder="أدخل اسم المنطقة الجديدة" required>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success btn-sm w-100">حفظ</button>
+                    <button type="button" class="btn btn-light btn-sm w-100" onclick="hideAddBox()">إلغاء</button>
+                </div>
             </form>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>function showAddBox() { document.getElementById('addBox').style.display='block'; }</script>
+    <script>
+        function showAddBox() { document.getElementById('addBox').style.display='block'; }
+        function hideAddBox() { document.getElementById('addBox').style.display='none'; }
+    </script>
 </body>
 </html>

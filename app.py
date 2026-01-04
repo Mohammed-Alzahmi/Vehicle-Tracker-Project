@@ -1,11 +1,10 @@
 import os
 import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-import pytz 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'uae-secret-key-123'
+app.config['SECRET_KEY'] = 'uae-police-secure-key'
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'cars.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -22,8 +21,7 @@ class CarLog(db.Model):
 class Region(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
-    # قائمة السيارات المتاحة لهالمنطقة (مفصولة بفاصلة)
-    allowed_cars = db.Column(db.String(500), default="نيسان,تويوتا,لكزس")
+    allowed_cars = db.Column(db.String(500), default="نيسان,تويوتا,لكزس,شفروليه,مرسيدس")
 
 with app.app_context():
     db.create_all()
@@ -48,16 +46,16 @@ def index():
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    # استخدمنا .get عشان لو الخانة ناقصة ما يطلع Bad Request
+    # استخدمنا .get لمنع ظهور Bad Request إذا نقصت خانة
     new_log = CarLog(
-        username=request.form.get('username'),
-        military_id=request.form.get('military_id'),
-        car_type=request.form.get('car_type'),
-        region=request.form.get('region')
+        username=request.form.get('username', 'غير معروف'),
+        military_id=request.form.get('military_id', '0000'),
+        car_type=request.form.get('car_type', 'غير محدد'),
+        region=request.form.get('region', 'الشارقة')
     )
     db.session.add(new_log)
     db.session.commit()
-    return "<h1>تم تسجيل بياناتك بنجاح ✅</h1><p>يمكنك إغلاق الصفحة الآن.</p>"
+    return "<h1>✅ تم التسجيل بنجاح</h1><p>شكراً لك، تم حفظ بيانات المركبة.</p>"
 
 @app.route('/manage_cars/<int:id>', methods=['GET', 'POST'])
 def manage_cars(id):
@@ -72,8 +70,9 @@ def manage_cars(id):
 def add_region():
     name = request.form.get('region_name')
     if name:
-        db.session.add(Region(name=name))
-        db.session.commit()
+        if not Region.query.filter_by(name=name).first():
+            db.session.add(Region(name=name))
+            db.session.commit()
     return redirect(url_for('home'))
 
 @app.route('/delete_region/<int:id>')
