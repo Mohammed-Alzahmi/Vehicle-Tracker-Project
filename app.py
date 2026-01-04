@@ -15,14 +15,13 @@ class CarLog(db.Model):
     username = db.Column(db.String(100))
     military_id = db.Column(db.String(50))
     car_type = db.Column(db.String(50))
-    car_plate = db.Column(db.String(50)) 
     region = db.Column(db.String(50))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 class Region(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
-    allowed_cars = db.Column(db.String(500), default="") # هنا خليناها فاضية
+    allowed_cars = db.Column(db.String(500), default="") 
 
 with app.app_context():
     db.create_all()
@@ -53,7 +52,6 @@ def submit():
         username=request.form.get('username'),
         military_id=request.form.get('military_id'),
         car_type=request.form.get('car_type'),
-        car_plate=request.form.get('car_plate'),
         region=request.form.get('region')
     )
     db.session.add(new_log)

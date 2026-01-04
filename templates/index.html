@@ -19,26 +19,21 @@
 <body>
     <div class="reg-card">
         <div class="logos-container">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Emblem_of_the_United_Arab_Emirates.svg/1200px-Emblem_of_the_United_Arab_Emirates.svg.png" class="side-logo">
-            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/33/Sharjah_Police_Logo.png/200px-Sharjah_Police_Logo.png" class="main-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Emblem_of_the_United_Arab_Emirates.svg/512px-Emblem_of_the_United_Arab_Emirates.svg.png" class="side-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/33/Sharjah_Police_Logo.png/220px-Sharjah_Police_Logo.png" class="main-logo">
         </div>
-
         <h3 class="fw-bold mb-1">تسجيل دخول مركبة</h3>
         <p class="text-muted mb-4">المنطقة: <span style="color: #b8860b; font-weight: bold;">{{ region }}</span></p>
-        
         <form action="/submit" method="POST">
             <input type="hidden" name="region" value="{{ region }}">
-            
             <div class="mb-3">
                 <label class="form-label">الاسم بالكامل</label>
                 <input type="text" name="username" class="form-control form-control-lg" placeholder="اكتب الاسم هنا" required>
             </div>
-            
             <div class="mb-3">
                 <label class="form-label">الرقم العسكري</label>
                 <input type="number" name="military_id" class="form-control form-control-lg" placeholder="00000" required>
             </div>
-
             <div class="mb-4">
                 <label class="form-label">نوع السيارة</label>
                 <select name="car_type" class="form-select form-select-lg" required>
@@ -47,11 +42,7 @@
                     <option value="{{ car }}">{{ car }}</option>
                     {% endfor %}
                 </select>
-                {% if not car_list %}
-                <small class="text-danger d-block mt-2">يرجى إضافة أنواع سيارات من لوحة التحكم أولاً</small>
-                {% endif %}
             </div>
-
             <button type="submit" class="btn-submit">إرسال البيانات ✅</button>
         </form>
     </div>
