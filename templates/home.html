@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
-        .hero-header { background: white; padding: 30px; text-align: center; border-bottom: 3px solid #b8860b; margin-bottom: 40px; }
-        .main-logo { height: 100px; margin-bottom: 15px; }
+        .hero-header { background: white; padding: 20px; text-align: center; border-bottom: 3px solid #b8860b; margin-bottom: 40px; }
+        .logos-container { display: flex; justify-content: space-between; align-items: center; max-width: 800px; margin: 0 auto 15px; padding: 0 20px; }
+        .side-logo { height: 70px; object-fit: contain; }
+        .main-logo { height: 90px; object-fit: contain; }
         .region-card { 
             background: white; border-radius: 20px; padding: 40px 20px; 
             text-align: center; border: 1px solid #e0e0e0; transition: 0.3s;
@@ -24,7 +26,10 @@
 </head>
 <body>
     <div class="hero-header">
-        <img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/33/Sharjah_Police_Logo.png/200px-Sharjah_Police_Logo.png" class="main-logo">
+        <div class="logos-container">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Emblem_of_the_United_Arab_Emirates.svg/1200px-Emblem_of_the_United_Arab_Emirates.svg.png" class="side-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/en/thumb/3/33/Sharjah_Police_Logo.png/200px-Sharjah_Police_Logo.png" class="main-logo">
+        </div>
         <h2 style="color: #4b3621; font-weight: bold;">نظام إدارة السجلات</h2>
         <p class="text-muted">القيادة العامة لشرطة الشارقة</p>
     </div>
@@ -35,7 +40,6 @@
                 <div class="dropdown dots-menu">
                     <i class="fas fa-ellipsis-v" data-bs-toggle="dropdown"></i>
                     <ul class="dropdown-menu shadow">
-                        <li><a class="dropdown-item" href="{{ url_for('view_logs', region_name=reg.name) }}"><i class="fas fa-edit ms-2"></i>تعديل</a></li>
                         <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}"><i class="fas fa-trash ms-2"></i>حذف المنطقة</a></li>
                     </ul>
                 </div>

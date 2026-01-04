@@ -22,7 +22,7 @@ class CarLog(db.Model):
 class Region(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
-    allowed_cars = db.Column(db.String(500), default="نيسان,تويوتا,لكزس,مرسيدس")
+    allowed_cars = db.Column(db.String(500), default="") # هنا خليناها فاضية
 
 with app.app_context():
     db.create_all()
@@ -66,7 +66,6 @@ def manage_cars(id):
     if request.method == 'POST':
         action = request.form.get('action')
         cars = reg.allowed_cars.split(',') if reg.allowed_cars else []
-        
         if action == 'add':
             new_car = request.form.get('new_car').strip()
             if new_car and new_car not in cars:
@@ -75,11 +74,9 @@ def manage_cars(id):
             car_to_del = request.form.get('car_to_delete')
             if car_to_del in cars:
                 cars.remove(car_to_del)
-        
         reg.allowed_cars = ','.join(filter(None, cars))
         db.session.commit()
         return redirect(url_for('manage_cars', id=id))
-        
     car_list = reg.allowed_cars.split(',') if reg.allowed_cars else []
     return render_template('manage_cars.html', reg=reg, car_list=car_list)
 
