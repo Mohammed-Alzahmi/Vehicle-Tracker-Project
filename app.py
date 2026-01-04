@@ -13,6 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'ca
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# جدول السجلات
 class CarLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), nullable=False)
@@ -21,6 +22,7 @@ class CarLog(db.Model):
     region = db.Column(db.String(50), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
+# جدول المناطق
 class Region(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
@@ -42,15 +44,26 @@ def home():
 
 @app.route('/region_qr/<string:region_name>')
 def region_qr(region_name):
-    # هذا الرابط اللي بيفتحه الباركود (يودي لصفحة التسجيل)
-    qr_link = url_for('index', region=region_name, _external=True)
+    # هذا يقرأ رابط الموقع أوتوماتيك سواء كان أونلاين أو محلي
+    base_url = request.host_url.rstrip('/')
+    qr_link = f"{base_url}/register?region={region_name}"
     return render_template('qr_view.html', region=region_name, qr_link=qr_link)
 
 @app.route('/register')
 def index():
-    car_name = request.args.get('car', 'سيارة غير محددة')
     region = request.args.get('region', 'الشارقة')
-    return render_template('index.html', car_name=car_name, region=region)
+    return render_template('index.html', region=region)
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    username = request.form['username']
+    military_id = request.form['military_id']
+    car_type = request.form['car_type']
+    region = request.form['region']
+    new_log = CarLog(username=username, military_id=military_id, car_type=car_type, region=region)
+    db.session.add(new_log)
+    db.session.commit()
+    return "تم التسجيل بنجاح!"
 
 @app.route('/add_region', methods=['POST'])
 def add_region():
@@ -79,4 +92,6 @@ def admin():
     return render_template('admin.html', logs=logs)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # مهم للرفع أونلاين
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)

@@ -11,22 +11,22 @@
         .top-bar { padding: 20px 40px; display: flex; justify-content: flex-start; } 
         .settings-link { color: #b8860b; font-size: 28px; text-decoration: none; }
         .hero-section { text-align: center; padding-top: 10px; }
-        .logo-large { height: 110px; width: auto; margin: 0 15px; }
+        .logo-large { height: 100px; width: auto; margin: 0 15px; }
         .welcome-title { color: #4b3621; font-weight: bold; margin-top: 25px; font-size: 28px; }
+
         .main-container { max-width: 800px; margin: 40px auto; padding: 20px; }
         .region-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
         
-        /* جعل الكارد بالكامل قابل للضغط */
+        .region-card-wrapper { position: relative; }
         .region-card { 
             background: white; border: 2px solid #4b3621; border-radius: 15px; padding: 25px; 
-            text-align: center; position: relative; transition: 0.3s; cursor: pointer;
-            text-decoration: none; display: block;
+            text-align: center; transition: 0.3s; cursor: pointer; text-decoration: none; display: block;
         }
         .region-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .region-name { color: #4b3621; font-weight: bold; font-size: 22px; margin-top: 15px; }
         
-        .dots-wrapper { position: absolute; top: 10px; left: 10px; z-index: 10; }
-        .dots-btn { color: #ccc; font-size: 18px; padding: 5px; }
+        .dots-btn { position: absolute; top: 10px; left: 10px; color: #ccc; cursor: pointer; padding: 5px; z-index: 10; }
+        .dropdown-menu { text-align: right; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -44,21 +44,19 @@
     <div class="main-container">
         <div class="region-grid">
             {% for reg in regions %}
-            <div class="position-relative">
+            <div class="region-card-wrapper">
                 <a href="{{ url_for('region_qr', region_name=reg.name) }}" class="region-card">
                     <i class="fas fa-qrcode" style="font-size: 40px; color: #b8860b;"></i>
                     <div class="region-name">{{ reg.name }}</div>
                 </a>
 
-                <div class="dots-wrapper">
-                    <div class="dropdown">
-                        <div class="dots-btn" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></div>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-pen ms-2"></i>تعديل</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}"><i class="fas fa-trash ms-2"></i>حذف</a></li>
-                        </ul>
-                    </div>
+                <div class="dropdown">
+                    <div class="dots-btn" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></div>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-car ms-2"></i>تعديل السيارات</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}"><i class="fas fa-trash ms-2"></i>حذف</a></li>
+                    </ul>
                 </div>
             </div>
             {% endfor %}
