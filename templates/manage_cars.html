@@ -1,0 +1,9 @@
+<div style="direction: rtl; font-family: sans-serif; padding: 30px;">
+    <h2>تعديل سيارات منطقة: {{ reg.name }}</h2>
+    <form method="POST">
+        <p>اكتبي أنواع السيارات وافصلي بينهم بفاصلة (،):</p>
+        <textarea name="cars" style="width: 100%; height: 100px;">{{ reg.allowed_cars }}</textarea>
+        <br><br>
+        <button type="submit" style="padding: 10px 20px; background: green; color: white; border: none;">حفظ التعديلات</button>
+    </form>
+</div>
