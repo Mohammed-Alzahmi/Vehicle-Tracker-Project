@@ -2,26 +2,52 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>تعديل القائمة</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل قائمة السيارات</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { background: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; }
-        .edit-card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        .btn-save { background: #198754; color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; }
+        body { background: #f4f7f6; font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        .manage-card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 550px; }
+        .car-item { background: #f8f9fa; border: 1px solid #eee; padding: 12px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .car-name { font-weight: 600; color: #333; }
+        .delete-btn { color: #dc3545; cursor: pointer; border: none; background: none; transition: 0.2s; }
+        .delete-btn:hover { transform: scale(1.2); }
+        .add-box { background: #e9ecef; padding: 20px; border-radius: 15px; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="edit-card">
-        <h3 class="text-center mb-4">تعديل قائمة السيارات: {{ reg.name }}</h3>
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label text-muted">اكتبي الأنواع وافصلي بينها بفاصلة (,):</label>
-                <textarea name="cars" class="form-control" rows="4" required>{{ reg.allowed_cars }}</textarea>
-                <small class="text-muted">مثال: نيسان,تويوتا,لكزس</small>
-            </div>
-            <button type="submit" class="btn btn-save mb-2">حفظ القائمة ✅</button>
-            <a href="{{ url_for('view_logs', region_name=reg.name) }}" class="btn btn-light w-100">إلغاء</a>
-        </form>
+    <div class="manage-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">قائمة السيارات: <span style="color: #b8860b;">{{ reg.name }}</span></h4>
+            <a href="{{ url_for('view_logs', region_name=reg.name) }}" class="btn btn-sm btn-outline-secondary">إغلاق</a>
+        </div>
+
+        <div class="car-list">
+            {% if car_list %}
+                {% for car in car_list %}
+                <div class="car-item">
+                    <span class="car-name"><i class="fas fa-car-side ms-2 text-muted"></i> {{ car }}</span>
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="car_to_delete" value="{{ car }}">
+                        <button type="submit" class="delete-btn"><i class="fas fa-trash-alt"></i></button>
+                    </form>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-center text-muted">لا توجد سيارات مضافة حالياً</p>
+            {% endif %}
+        </div>
+
+        <div class="add-box">
+            <h6 class="mb-3 fw-bold">إضافة نوع جديد:</h6>
+            <form method="POST" class="d-flex gap-2">
+                <input type="hidden" name="action" value="add">
+                <input type="text" name="new_car" class="form-control" placeholder="مثلاً: مرسيدس G63" required>
+                <button type="submit" class="btn btn-dark"><i class="fas fa-plus"></i></button>
+            </form>
+        </div>
     </div>
 </body>
 </html>
