@@ -13,19 +13,20 @@
         .hero-section { text-align: center; padding-top: 10px; }
         .logo-large { height: 110px; width: auto; margin: 0 15px; }
         .welcome-title { color: #4b3621; font-weight: bold; margin-top: 25px; font-size: 28px; }
-
         .main-container { max-width: 800px; margin: 40px auto; padding: 20px; }
         .region-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
         
+        /* جعل الكارد بالكامل قابل للضغط */
         .region-card { 
             background: white; border: 2px solid #4b3621; border-radius: 15px; padding: 25px; 
-            text-align: center; position: relative; transition: 0.3s;
+            text-align: center; position: relative; transition: 0.3s; cursor: pointer;
+            text-decoration: none; display: block;
         }
-        .region-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .region-link { text-decoration: none; color: #4b3621; font-weight: bold; font-size: 20px; display: block; margin-top: 10px; }
+        .region-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .region-name { color: #4b3621; font-weight: bold; font-size: 22px; margin-top: 15px; }
         
-        .dots-btn { position: absolute; top: 10px; left: 10px; color: #ccc; cursor: pointer; }
-        .dropdown-menu { text-align: right; border-radius: 10px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .dots-wrapper { position: absolute; top: 10px; left: 10px; z-index: 10; }
+        .dots-btn { color: #ccc; font-size: 18px; padding: 5px; }
     </style>
 </head>
 <body>
@@ -43,18 +44,22 @@
     <div class="main-container">
         <div class="region-grid">
             {% for reg in regions %}
-            <div class="region-card">
-                <div class="dropdown">
-                    <div class="dots-btn" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></div>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="{{ url_for('region_qr', region_name=reg.name) }}"><i class="fas fa-qrcode ms-2"></i>عرض الباركود</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="fas fa-pen ms-2"></i>تعديل البيانات</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}"><i class="fas fa-trash ms-2"></i>حذف</a></li>
-                    </ul>
+            <div class="position-relative">
+                <a href="{{ url_for('region_qr', region_name=reg.name) }}" class="region-card">
+                    <i class="fas fa-qrcode" style="font-size: 40px; color: #b8860b;"></i>
+                    <div class="region-name">{{ reg.name }}</div>
+                </a>
+
+                <div class="dots-wrapper">
+                    <div class="dropdown">
+                        <div class="dots-btn" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></div>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-pen ms-2"></i>تعديل</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{{ url_for('delete_region', id=reg.id) }}"><i class="fas fa-trash ms-2"></i>حذف</a></li>
+                        </ul>
+                    </div>
                 </div>
-                <i class="fas fa-map-marker-alt" style="font-size: 30px; color: #b8860b;"></i>
-                <a href="{{ url_for('admin', code='A999A', region=reg.name) }}" class="region-link">{{ reg.name }}</a>
             </div>
             {% endfor %}
         </div>
