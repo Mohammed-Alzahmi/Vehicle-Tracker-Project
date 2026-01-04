@@ -10,13 +10,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'ca
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# قاعدة بيانات السجلات - أضفنا رقم السيارة
 class CarLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100))
     military_id = db.Column(db.String(50))
     car_type = db.Column(db.String(50))
-    car_plate = db.Column(db.String(50)) # رقم السيارة
+    car_plate = db.Column(db.String(50)) 
     region = db.Column(db.String(50))
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
@@ -26,6 +25,8 @@ class Region(db.Model):
     allowed_cars = db.Column(db.String(500), default="نيسان,تويوتا,لكزس,مرسيدس")
 
 with app.app_context():
+    # الخطوة السحرية: بيمسح القديم ويسوي الجديد
+    db.drop_all() 
     db.create_all()
 
 @app.route('/')
@@ -43,7 +44,8 @@ def view_logs(region_name):
 
 @app.route('/delete_logs', methods=['POST'])
 def delete_logs():
-    log_ids = request.json.get('ids', [])
+    data = request.get_json()
+    log_ids = data.get('ids', [])
     if log_ids:
         CarLog.query.filter(CarLog.id.in_(log_ids)).delete(synchronize_session=False)
         db.session.commit()
@@ -62,7 +64,7 @@ def submit():
         username=request.form.get('username'),
         military_id=request.form.get('military_id'),
         car_type=request.form.get('car_type'),
-        car_plate=request.form.get('car_plate'), # استقبال رقم السيارة
+        car_plate=request.form.get('car_plate'),
         region=request.form.get('region')
     )
     db.session.add(new_log)
@@ -82,9 +84,19 @@ def manage_cars(id):
 def add_region():
     name = request.form.get('region_name')
     if name:
-        db.session.add(Region(name=name))
+        if not Region.query.filter_by(name=name).first():
+            db.session.add(Region(name=name))
+            db.session.commit()
+    return redirect(url_for('home'))
+
+@app.route('/delete_region/<int:id>')
+def delete_region(id):
+    reg = Region.query.get(id)
+    if reg:
+        db.session.delete(reg)
         db.session.commit()
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
