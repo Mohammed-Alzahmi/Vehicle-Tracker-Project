@@ -21,7 +21,7 @@ class CarLog(db.Model):
 class Region(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True)
-    allowed_cars = db.Column(db.String(500), default="نيسان,تويوتا,لكزس,شفروليه,مرسيدس")
+    allowed_cars = db.Column(db.String(500), default="نيسان,تويوتا,لكزس,مرسيدس")
 
 with app.app_context():
     db.create_all()
@@ -31,22 +31,22 @@ def home():
     regions = Region.query.all()
     return render_template('home.html', regions=regions)
 
-@app.route('/region_qr/<string:region_name>')
-def region_qr(region_name):
+@app.route('/view_logs/<string:region_name>')
+def view_logs(region_name):
+    logs = CarLog.query.filter_by(region=region_name).order_by(CarLog.timestamp.desc()).all()
     base_url = request.host_url.rstrip('/')
     qr_link = f"{base_url}/register?region={region_name}"
-    return render_template('qr_view.html', region=region_name, qr_link=qr_link)
+    return render_template('region_details.html', region=region_name, logs=logs, qr_link=qr_link)
 
 @app.route('/register')
 def index():
     region_name = request.args.get('region', 'الشارقة')
     reg = Region.query.filter_by(name=region_name).first()
-    car_list = reg.allowed_cars.split(',') if reg else ["نيسان", "تويوتا", "لكزس"]
+    car_list = reg.allowed_cars.split(',') if reg else ["نيسان", "تويوتا"]
     return render_template('index.html', region=region_name, car_list=car_list)
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    # استخدمنا .get لمنع ظهور Bad Request إذا نقصت خانة
     new_log = CarLog(
         username=request.form.get('username', 'غير معروف'),
         military_id=request.form.get('military_id', '0000'),
@@ -70,9 +70,8 @@ def manage_cars(id):
 def add_region():
     name = request.form.get('region_name')
     if name:
-        if not Region.query.filter_by(name=name).first():
-            db.session.add(Region(name=name))
-            db.session.commit()
+        db.session.add(Region(name=name))
+        db.session.commit()
     return redirect(url_for('home'))
 
 @app.route('/delete_region/<int:id>')
